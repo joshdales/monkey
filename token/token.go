@@ -5,10 +5,14 @@ type TokenType string
 const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
+
 	// Identifiers & literals
+
 	IDENT = "IDENT"
 	INT   = "INT"
+
 	// Operators
+
 	ASSIGN   = "="
 	PLUS     = "+"
 	MINUS    = "-"
@@ -19,14 +23,18 @@ const (
 	GT       = ">"
 	EQ       = "=="
 	NOT_EQ   = "!="
+
 	// Denominators
+
 	COMMA     = ","
 	SEMICOLON = ";"
 	LPAREN    = "("
 	RPAREN    = ")"
 	LBRACE    = "{"
 	RBRACE    = "}"
+
 	// Keywords
+
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 	TRUE     = "TRUE"
