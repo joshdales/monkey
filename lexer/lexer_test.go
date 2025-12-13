@@ -111,7 +111,7 @@ if (5 < 10) {
 	lex := lexer.New(input)
 	for _, tt := range tests {
 		tok := lex.NextToken()
-		assert.Equalf(t, tt.expectedType, tok.Type, "Token.Type does not match")
-		assert.Equalf(t, tt.expectedLiteral, tok.Literal, "Token.Literal does not match")
+		assert.Equal(t, tt.expectedType, tok.Type, "Token.Type does not match")
+		assert.Equal(t, tt.expectedLiteral, tok.Literal, "Token.Literal does not match")
 	}
 }
