@@ -22,6 +22,7 @@ let foobar = 838383;
 
 	program := p.ParseProgram()
 	require.NotNil(t, program, "program.ParseProgram() returned nil")
+	checkParserErrors(t, p)
 	require.Len(t, program.Statements, 3, "program.Statements does not contain 3 statements.")
 	tests := []struct{ expectedIdentifier string }{
 		{"x"},
@@ -36,9 +37,24 @@ let foobar = 838383;
 }
 
 func testLetStatement(t *testing.T, s ast.Statement, name string) {
+	t.Helper()
 	assert.Equal(t, "let", s.TokenLiteral(), "TokenLiteral not 'let'")
 	letStmt, ok := s.(*ast.LetStatement)
 	assert.True(t, ok)
 	assert.Equal(t, name, letStmt.Name.Value)
 	assert.Equal(t, name, letStmt.Name.TokenLiteral())
+}
+
+func checkParserErrors(t *testing.T, p *parser.Parser) {
+	t.Helper()
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+
+	t.Errorf("Parser has %d errors", len(errors))
+	for _, msg := range errors {
+		t.Errorf("parser error: %q", msg)
+	}
+	t.FailNow()
 }
