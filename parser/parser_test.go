@@ -60,7 +60,7 @@ func testLetStatement(t *testing.T, s ast.Statement, name string) {
 	t.Helper()
 	assert.Equal(t, "let", s.TokenLiteral(), "TokenLiteral not 'let'")
 	letStmt, ok := s.(*ast.LetStatement)
-	assert.True(t, ok)
+	require.True(t, ok)
 	assert.Equal(t, name, letStmt.Name.Value)
 	assert.Equal(t, name, letStmt.Name.TokenLiteral())
 }
@@ -74,7 +74,7 @@ return 993322;
 	program := setupTests(t, input, 3)
 	for _, stmt := range program.Statements {
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
-		assert.True(t, ok)
+		require.True(t, ok)
 		assert.Equal(t, "return", returnStmt.TokenLiteral(), "TokenLiteral not 'return'")
 	}
 }
@@ -83,9 +83,20 @@ func TestIdentifierExpression(t *testing.T) {
 	input := "foobar;"
 	program := setupTests(t, input, 1)
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	assert.True(t, ok)
+	require.True(t, ok)
 	ident, ok := stmt.Expression.(*ast.Identifier)
-	assert.True(t, ok)
+	require.True(t, ok)
 	assert.Equal(t, "foobar", ident.Value)
 	assert.Equal(t, "foobar", ident.Token.Literal)
+}
+
+func TestIntegerLiteralExpression(t *testing.T) {
+	input := "5;"
+	program := setupTests(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	require.True(t, ok)
+	literal, ok := stmt.Expression.(*ast.IntegerLiteral)
+	require.True(t, ok)
+	assert.Equal(t, int64(5), literal.Value)
+	assert.Equal(t, "5", literal.TokenLiteral())
 }
