@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"fmt"
 	"monkey/ast"
 	"monkey/lexer"
 	"monkey/parser"
@@ -52,11 +53,11 @@ let foobar = 838383;
 
 	for i, tt := range tests {
 		stmt := program.Statements[i]
-		testLetStatement(t, stmt, tt.expectedIdentifier)
+		testLetStatement(t, tt.expectedIdentifier, stmt)
 	}
 }
 
-func testLetStatement(t *testing.T, s ast.Statement, name string) {
+func testLetStatement(t *testing.T, name string, s ast.Statement) {
 	t.Helper()
 	assert.Equal(t, "let", s.TokenLiteral(), "TokenLiteral not 'let'")
 	letStmt, ok := s.(*ast.LetStatement)
@@ -99,4 +100,33 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, int64(5), literal.Value)
 	assert.Equal(t, "5", literal.TokenLiteral())
+}
+
+func TestParsingPrefixExpressions(t *testing.T) {
+	prefixTests := []struct {
+		input        string
+		operator     string
+		integerValue int64
+	}{
+		{"!5", "!", 5},
+		{"-15", "-", 15},
+	}
+
+	for _, tt := range prefixTests {
+		program := setupTests(t, tt.input, 1)
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
+		exp, ok := stmt.Expression.(*ast.PrefixExpression)
+		require.True(t, ok)
+		assert.Equal(t, tt.operator, exp.Operator)
+		testIntegerLiteral(t, tt.integerValue, exp.Right)
+	}
+}
+
+func testIntegerLiteral(t *testing.T, value int64, exp ast.Expression) {
+	t.Helper()
+	il, ok := exp.(*ast.IntegerLiteral)
+	require.True(t, ok)
+	assert.Equal(t, value, il.Value)
+	assert.Equal(t, fmt.Sprintf("%d", value), il.Token.Literal)
 }
