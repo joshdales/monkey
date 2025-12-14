@@ -78,3 +78,14 @@ return 993322;
 		assert.Equal(t, "return", returnStmt.TokenLiteral(), "TokenLiteral not 'return'")
 	}
 }
+
+func TestIdentifierExpression(t *testing.T) {
+	input := "foobar;"
+	program := setupTests(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	assert.True(t, ok)
+	ident, ok := stmt.Expression.(*ast.Identifier)
+	assert.True(t, ok)
+	assert.Equal(t, "foobar", ident.Value)
+	assert.Equal(t, "foobar", ident.Token.Literal)
+}
