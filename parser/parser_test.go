@@ -19,7 +19,9 @@ func setupTests(t *testing.T, input string, stmtLen int) *ast.Program {
 	program := p.ParseProgram()
 	require.NotNil(t, program, "program.ParseProgram() returned nil")
 	checkParserErrors(t, p)
-	require.Len(t, program.Statements, stmtLen, "program.Statements does not contain %d statements.", stmtLen)
+	if stmtLen > 0 {
+		require.Len(t, program.Statements, stmtLen, "program.Statements does not contain %d statements.", stmtLen)
+	}
 	return program
 }
 
@@ -157,5 +159,31 @@ func TestParsingInfixExpressions(t *testing.T) {
 		testIntegerLiteral(t, tt.leftValue, exp.Left)
 		assert.Equal(t, tt.operator, exp.Operator)
 		testIntegerLiteral(t, tt.rightValue, exp.Right)
+	}
+}
+
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"-a * b", "((-a) * b)"},
+		{"!-a", "(!(-a))"},
+		{"a + b + c", "((a + b) + c)"},
+		{"a + b - c", "((a + b) - c)"},
+		{"a * b * c", "((a * b) * c)"},
+		{"a * b / c", "((a * b) / c)"},
+		{"a + b / c", "(a + (b / c))"},
+		{"a + b * c + d / e -f", "(((a + (b * c)) + (d / e)) - f)"},
+		{"3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 > 4 != 3 < 4", "((5 > 4) != (3 < 4))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+	}
+
+	for _, tt := range tests {
+		program := setupTests(t, tt.input, 0)
+		actual := program.String()
+		assert.Equal(t, tt.expected, actual)
 	}
 }
