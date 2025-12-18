@@ -6,8 +6,7 @@ import (
 )
 
 type InfixExpression struct {
-	// The operator token eg. `+`
-	Token    token.Token
+	Token    token.Token // The operator token eg. `+`
 	Left     Expression
 	Operator string
 	Right    Expression
@@ -21,9 +20,11 @@ func (ie *InfixExpression) TokenLiteral() string {
 
 func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
+
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
 	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
 	out.WriteString(")")
 
 	return out.String()

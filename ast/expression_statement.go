@@ -3,8 +3,7 @@ package ast
 import "monkey/token"
 
 type ExpressionStatement struct {
-	// The first token of the expression
-	Token      token.Token
+	Token      token.Token // The first token of the expression
 	Expression Expression
 }
 

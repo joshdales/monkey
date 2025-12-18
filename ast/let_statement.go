@@ -6,8 +6,7 @@ import (
 )
 
 type LetStatement struct {
-	// The `token.LET` token
-	Token token.Token
+	Token token.Token // The `token.LET` token
 	Name  *Identifier
 	Value Expression
 }

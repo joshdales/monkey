@@ -9,18 +9,12 @@ import (
 const (
 	_ int = iota
 	LOWEST
-	// `==`
-	EQUALS
-	// `>` or `<`
-	LESSGREATER
-	// `+`
-	SUM
-	// `*`
-	PRODUCT
-	// `-X` or `!X`
-	PREFIX
-	// `myfunction(X)`
-	CALL
+	EQUALS      // `==`
+	LESSGREATER // `>` or `<`
+	SUM         // `+`
+	PRODUCT     // `*`
+	PREFIX      // `-X` or `!X`
+	CALL        // `myfunction(X)`
 )
 
 type (
