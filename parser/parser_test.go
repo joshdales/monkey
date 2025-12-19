@@ -11,6 +11,127 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestLetStatements(t *testing.T) {
+	input := `
+let x = 5;
+let y = 10;
+let foobar = 838383;
+`
+
+	program := setupTests(t, input, 3)
+	tests := []struct{ expectedIdentifier string }{
+		{"x"},
+		{"y"},
+		{"foobar"},
+	}
+
+	for i, tt := range tests {
+		stmt := program.Statements[i]
+		testLetStatement(t, tt.expectedIdentifier, stmt)
+	}
+}
+
+func TestReturnStatement(t *testing.T) {
+	input := `
+return 5;
+return 10;
+return 993322;
+`
+	program := setupTests(t, input, 3)
+	for _, stmt := range program.Statements {
+		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		require.True(t, ok)
+		assert.Equal(t, "return", returnStmt.TokenLiteral(), "TokenLiteral not 'return'")
+	}
+}
+
+func TestIdentifierExpression(t *testing.T) {
+	input := "foobar;"
+	program := setupTests(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	require.True(t, ok)
+	testLiteralExpression(t, "foobar", stmt.Expression)
+}
+
+func TestIntegerLiteralExpression(t *testing.T) {
+	input := "5;"
+	program := setupTests(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	require.True(t, ok)
+	testLiteralExpression(t, 5, stmt.Expression)
+}
+
+func TestParsingPrefixExpressions(t *testing.T) {
+	prefixTests := []struct {
+		input        string
+		operator     string
+		integerValue int64
+	}{
+		{"!5", "!", 5},
+		{"-15", "-", 15},
+	}
+
+	for _, tt := range prefixTests {
+		program := setupTests(t, tt.input, 1)
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
+		testPrefixExpression(t, stmt.Expression, tt.operator, tt.integerValue)
+	}
+}
+
+func TestParsingInfixExpressions(t *testing.T) {
+	infixTests := []struct {
+		input      string
+		leftValue  int64
+		operator   string
+		rightValue int64
+	}{
+		{"5 + 5;", 5, "+", 5},
+		{"5 - 5;", 5, "-", 5},
+		{"5 * 5;", 5, "*", 5},
+		{"5 / 5;", 5, "/", 5},
+		{"5 > 5;", 5, ">", 5},
+		{"5 < 5;", 5, "<", 5},
+		{"5 == 5;", 5, "==", 5},
+		{"5 != 5;", 5, "!=", 5},
+	}
+
+	for _, tt := range infixTests {
+		program := setupTests(t, tt.input, 1)
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		require.True(t, ok)
+		testInfixExpression(t, stmt.Expression, tt.leftValue, tt.operator, tt.rightValue)
+	}
+}
+
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"-a * b", "((-a) * b)"},
+		{"!-a", "(!(-a))"},
+		{"a + b + c", "((a + b) + c)"},
+		{"a + b - c", "((a + b) - c)"},
+		{"a * b * c", "((a * b) * c)"},
+		{"a * b / c", "((a * b) / c)"},
+		{"a + b / c", "(a + (b / c))"},
+		{"a + b * c + d / e -f", "(((a + (b * c)) + (d / e)) - f)"},
+		{"3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 > 4 != 3 < 4", "((5 > 4) != (3 < 4))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+	}
+
+	for _, tt := range tests {
+		program := setupTests(t, tt.input, 0)
+		actual := program.String()
+		assert.Equal(t, tt.expected, actual)
+	}
+}
+
+// Test Helpers
+
 func setupTests(t *testing.T, input string, stmtLen int) *ast.Program {
 	t.Helper()
 	l := lexer.New(input)
@@ -39,26 +160,6 @@ func checkParserErrors(t *testing.T, p *parser.Parser) {
 	t.FailNow()
 }
 
-func TestLetStatements(t *testing.T) {
-	input := `
-let x = 5;
-let y = 10;
-let foobar = 838383;
-`
-
-	program := setupTests(t, input, 3)
-	tests := []struct{ expectedIdentifier string }{
-		{"x"},
-		{"y"},
-		{"foobar"},
-	}
-
-	for i, tt := range tests {
-		stmt := program.Statements[i]
-		testLetStatement(t, tt.expectedIdentifier, stmt)
-	}
-}
-
 func testLetStatement(t *testing.T, name string, s ast.Statement) {
 	t.Helper()
 	assert.Equal(t, "let", s.TokenLiteral(), "TokenLiteral not 'let'")
@@ -68,40 +169,18 @@ func testLetStatement(t *testing.T, name string, s ast.Statement) {
 	assert.Equal(t, name, letStmt.Name.TokenLiteral())
 }
 
-func TestReturnStatement(t *testing.T) {
-	input := `
-return 5;
-return 10;
-return 993322;
-`
-	program := setupTests(t, input, 3)
-	for _, stmt := range program.Statements {
-		returnStmt, ok := stmt.(*ast.ReturnStatement)
-		require.True(t, ok)
-		assert.Equal(t, "return", returnStmt.TokenLiteral(), "TokenLiteral not 'return'")
+func testLiteralExpression(t *testing.T, expected interface{}, exp ast.Expression) {
+	t.Helper()
+	switch value := expected.(type) {
+	case int:
+		testIntegerLiteral(t, int64(value), exp)
+	case int64:
+		testIntegerLiteral(t, value, exp)
+	case string:
+		testIdentifier(t, value, exp)
+	default:
+		t.Errorf("type of exp not handled. got=%T", exp)
 	}
-}
-
-func TestIdentifierExpression(t *testing.T) {
-	input := "foobar;"
-	program := setupTests(t, input, 1)
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	require.True(t, ok)
-	ident, ok := stmt.Expression.(*ast.Identifier)
-	require.True(t, ok)
-	assert.Equal(t, "foobar", ident.Value)
-	assert.Equal(t, "foobar", ident.Token.Literal)
-}
-
-func TestIntegerLiteralExpression(t *testing.T) {
-	input := "5;"
-	program := setupTests(t, input, 1)
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-	require.True(t, ok)
-	literal, ok := stmt.Expression.(*ast.IntegerLiteral)
-	require.True(t, ok)
-	assert.Equal(t, int64(5), literal.Value)
-	assert.Equal(t, "5", literal.TokenLiteral())
 }
 
 func testIntegerLiteral(t *testing.T, value int64, exp ast.Expression) {
@@ -112,78 +191,27 @@ func testIntegerLiteral(t *testing.T, value int64, exp ast.Expression) {
 	assert.Equal(t, fmt.Sprintf("%d", value), il.Token.Literal)
 }
 
-func TestParsingPrefixExpressions(t *testing.T) {
-	prefixTests := []struct {
-		input        string
-		operator     string
-		integerValue int64
-	}{
-		{"!5", "!", 5},
-		{"-15", "-", 15},
-	}
-
-	for _, tt := range prefixTests {
-		program := setupTests(t, tt.input, 1)
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-		require.True(t, ok)
-		exp, ok := stmt.Expression.(*ast.PrefixExpression)
-		require.True(t, ok)
-		assert.Equal(t, tt.operator, exp.Operator)
-		testIntegerLiteral(t, tt.integerValue, exp.Right)
-	}
+func testIdentifier(t *testing.T, value string, exp ast.Expression) {
+	t.Helper()
+	iden, ok := exp.(*ast.Identifier)
+	require.True(t, ok)
+	assert.Equal(t, value, iden.Value)
+	assert.Equal(t, value, iden.TokenLiteral())
 }
 
-func TestParsingInfixExpressions(t *testing.T) {
-	infixTests := []struct {
-		input      string
-		leftValue  int64
-		operator   string
-		rightValue int64
-	}{
-		{"5 + 5;", 5, "+", 5},
-		{"5 - 5;", 5, "-", 5},
-		{"5 * 5;", 5, "*", 5},
-		{"5 / 5;", 5, "/", 5},
-		{"5 > 5;", 5, ">", 5},
-		{"5 < 5;", 5, "<", 5},
-		{"5 == 5;", 5, "==", 5},
-		{"5 != 5;", 5, "!=", 5},
-	}
-
-	for _, tt := range infixTests {
-		program := setupTests(t, tt.input, 1)
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
-		require.True(t, ok)
-		exp, ok := stmt.Expression.(*ast.InfixExpression)
-		require.True(t, ok)
-		testIntegerLiteral(t, tt.leftValue, exp.Left)
-		assert.Equal(t, tt.operator, exp.Operator)
-		testIntegerLiteral(t, tt.rightValue, exp.Right)
-	}
+func testPrefixExpression(t *testing.T, exp ast.Expression, operator string, right any) {
+	t.Helper()
+	opExp, ok := exp.(*ast.PrefixExpression)
+	require.True(t, ok)
+	assert.Equal(t, operator, opExp.Operator)
+	testLiteralExpression(t, right, opExp.Right)
 }
 
-func TestOperatorPrecedenceParsing(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{"-a * b", "((-a) * b)"},
-		{"!-a", "(!(-a))"},
-		{"a + b + c", "((a + b) + c)"},
-		{"a + b - c", "((a + b) - c)"},
-		{"a * b * c", "((a * b) * c)"},
-		{"a * b / c", "((a * b) / c)"},
-		{"a + b / c", "(a + (b / c))"},
-		{"a + b * c + d / e -f", "(((a + (b * c)) + (d / e)) - f)"},
-		{"3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"},
-		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
-		{"5 > 4 != 3 < 4", "((5 > 4) != (3 < 4))"},
-		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
-	}
-
-	for _, tt := range tests {
-		program := setupTests(t, tt.input, 0)
-		actual := program.String()
-		assert.Equal(t, tt.expected, actual)
-	}
+func testInfixExpression(t *testing.T, exp ast.Expression, left any, operator string, right any) {
+	t.Helper()
+	opExp, ok := exp.(*ast.InfixExpression)
+	require.True(t, ok)
+	testLiteralExpression(t, left, opExp.Left)
+	assert.Equal(t, operator, opExp.Operator)
+	testLiteralExpression(t, right, opExp.Right)
 }
