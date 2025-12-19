@@ -61,6 +61,14 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	testLiteralExpression(t, 5, stmt.Expression)
 }
 
+func TestBooleanExpression(t *testing.T) {
+	input := "true;"
+	program := setupTests(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	require.True(t, ok)
+	testLiteralExpression(t, true, stmt.Expression)
+}
+
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
 		input        string
@@ -178,6 +186,8 @@ func testLiteralExpression(t *testing.T, expected interface{}, exp ast.Expressio
 		testIntegerLiteral(t, value, exp)
 	case string:
 		testIdentifier(t, value, exp)
+	case bool:
+		testBoolean(t, value, exp)
 	default:
 		t.Errorf("type of exp not handled. got=%T", exp)
 	}
@@ -197,6 +207,13 @@ func testIdentifier(t *testing.T, value string, exp ast.Expression) {
 	require.True(t, ok)
 	assert.Equal(t, value, iden.Value)
 	assert.Equal(t, value, iden.TokenLiteral())
+}
+
+func testBoolean(t *testing.T, value bool, exp ast.Expression) {
+	t.Helper()
+	b, ok := exp.(*ast.Boolean)
+	require.True(t, ok)
+	assert.Equal(t, value, b.Value)
 }
 
 func testPrefixExpression(t *testing.T, exp ast.Expression, operator string, right any) {
