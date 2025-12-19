@@ -71,28 +71,30 @@ func TestBooleanExpression(t *testing.T) {
 
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
-		input        string
-		operator     string
-		integerValue int64
+		input    string
+		operator string
+		value    any
 	}{
 		{"!5", "!", 5},
 		{"-15", "-", 15},
+		{"!true", "!", true},
+		{"!false", "!", false},
 	}
 
 	for _, tt := range prefixTests {
 		program := setupTests(t, tt.input, 1)
 		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 		require.True(t, ok)
-		testPrefixExpression(t, stmt.Expression, tt.operator, tt.integerValue)
+		testPrefixExpression(t, stmt.Expression, tt.operator, tt.value)
 	}
 }
 
 func TestParsingInfixExpressions(t *testing.T) {
 	infixTests := []struct {
 		input      string
-		leftValue  int64
+		leftValue  any
 		operator   string
-		rightValue int64
+		rightValue any
 	}{
 		{"5 + 5;", 5, "+", 5},
 		{"5 - 5;", 5, "-", 5},
@@ -102,6 +104,9 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"5 < 5;", 5, "<", 5},
 		{"5 == 5;", 5, "==", 5},
 		{"5 != 5;", 5, "!=", 5},
+		{"true == true", true, "==", true},
+		{"true != true", true, "!=", true},
+		{"false == false", false, "==", false},
 	}
 
 	for _, tt := range infixTests {
@@ -129,6 +134,10 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
 		{"5 > 4 != 3 < 4", "((5 > 4) != (3 < 4))"},
 		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+		{"true", "true"},
+		{"false", "false"},
+		{"3 > 5 == false", "((3 > 5) == false)"},
+		{"3 < 5 == true", "((3 < 5) == true)"},
 	}
 
 	for _, tt := range tests {
@@ -214,6 +223,7 @@ func testBoolean(t *testing.T, value bool, exp ast.Expression) {
 	b, ok := exp.(*ast.Boolean)
 	require.True(t, ok)
 	assert.Equal(t, value, b.Value)
+	assert.Equal(t, fmt.Sprintf("%t", value), b.TokenLiteral())
 }
 
 func testPrefixExpression(t *testing.T, exp ast.Expression, operator string, right any) {
