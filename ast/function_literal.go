@@ -23,7 +23,7 @@ func (fl *FunctionLiteral) TokenLiteral() string {
 func (fl *FunctionLiteral) String() string {
 	var out bytes.Buffer
 
-	params := []string{}
+	params := make([]string, 0, len(fl.Parameters))
 	for _, param := range fl.Parameters {
 		params = append(params, param.String())
 	}
