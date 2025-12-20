@@ -159,19 +159,19 @@ func TestIfExpression(t *testing.T) {
 	require.Nil(t, exp.Alternative)
 }
 
-// func TestIfElseExpression(t *testing.T) {
-// 	input := `if (x < y) { x } else { y }`
-// 	program := setupTests(t, input, 1)
-// 	stmt := testExpressionStatement(t, program.Statements[0])
-// 	exp, ok := stmt.Expression.(*ast.IfExpression)
-// 	require.True(t, ok)
-// 	testInfixExpression(t, exp, "x", "<", "y")
-// 	assert.Len(t, exp.Consequence.Statements, 1)
-// 	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
-// 	require.True(t, ok, "no consequence")
-// 	testIdentifier(t, "x", consequence.Expression)
-// 	require.Nil(t, exp.Alternative)
-// }
+func TestIfElseExpression(t *testing.T) {
+	input := `if (x < y) { x } else { y }`
+	program := setupTests(t, input, 1)
+	stmt := testExpressionStatement(t, program.Statements[0])
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	require.Truef(t, ok, "expected expression to be IfExpression, got %T", exp)
+	testInfixExpression(t, exp.Condition, "x", "<", "y")
+	assert.Len(t, exp.Consequence.Statements, 1)
+	consequence := testExpressionStatement(t, exp.Consequence.Statements[0])
+	testIdentifier(t, "x", consequence.Expression)
+	alternative := testExpressionStatement(t, exp.Alternative.Statements[0])
+	testIdentifier(t, "y", alternative.Expression)
+}
 
 // Test Helpers
 
