@@ -27,7 +27,7 @@ let foobar = 838383;
 
 	for i, tt := range tests {
 		stmt := program.Statements[i]
-		testLetStatement(t, tt.expectedIdentifier, stmt)
+		assertLetStatement(t, tt.expectedIdentifier, stmt)
 	}
 }
 
@@ -48,21 +48,21 @@ return 993322;
 func TestIdentifierExpression(t *testing.T) {
 	input := "foobar;"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	assertLiteralExpression(t, "foobar", stmt.Expression)
 }
 
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "5;"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	assertLiteralExpression(t, 5, stmt.Expression)
 }
 
 func TestBooleanExpression(t *testing.T) {
 	input := "true;"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	assertLiteralExpression(t, true, stmt.Expression)
 }
 
@@ -80,7 +80,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 
 	for _, tt := range prefixTests {
 		program := setupProgram(t, tt.input, 1)
-		stmt := testExpressionStatement(t, program.Statements[0])
+		stmt := assertExpressionStatement(t, program.Statements[0])
 		assertPrefixExpression(t, stmt.Expression, tt.operator, tt.value)
 	}
 }
@@ -107,7 +107,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 
 	for _, tt := range infixTests {
 		program := setupProgram(t, tt.input, 1)
-		stmt := testExpressionStatement(t, program.Statements[0])
+		stmt := assertExpressionStatement(t, program.Statements[0])
 		assertInfixExpression(t, stmt.Expression, tt.leftValue, tt.operator, tt.rightValue)
 	}
 }
@@ -149,12 +149,12 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 func TestIfExpression(t *testing.T) {
 	input := "if (x < y) { x }"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.IfExpression)
 	require.Truef(t, ok, "expected IfStatement, got %T", stmt.Expression)
 	assertInfixExpression(t, exp.Condition, "x", "<", "y")
 	assert.Len(t, exp.Consequence.Statements, 1)
-	consequence := testExpressionStatement(t, exp.Consequence.Statements[0])
+	consequence := assertExpressionStatement(t, exp.Consequence.Statements[0])
 	assertIdentifier(t, "x", consequence.Expression)
 	require.Nil(t, exp.Alternative)
 }
@@ -162,28 +162,28 @@ func TestIfExpression(t *testing.T) {
 func TestIfElseExpression(t *testing.T) {
 	input := "if (x < y) { x } else { y }"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.IfExpression)
 	require.Truef(t, ok, "expected expression to be IfExpression, got %T", exp)
 	assertInfixExpression(t, exp.Condition, "x", "<", "y")
 	assert.Len(t, exp.Consequence.Statements, 1)
-	consequence := testExpressionStatement(t, exp.Consequence.Statements[0])
+	consequence := assertExpressionStatement(t, exp.Consequence.Statements[0])
 	assertIdentifier(t, "x", consequence.Expression)
-	alternative := testExpressionStatement(t, exp.Alternative.Statements[0])
+	alternative := assertExpressionStatement(t, exp.Alternative.Statements[0])
 	assertIdentifier(t, "y", alternative.Expression)
 }
 
 func TestFunctionLiteralParsing(t *testing.T) {
 	input := "fn(x, y) { x + y }"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	function, ok := stmt.Expression.(*ast.FunctionLiteral)
 	require.Truef(t, ok, "expected expression to be FunctionLiteral, got %T", stmt.Expression)
 	assert.Len(t, function.Parameters, 2, "wrong number of function parameters")
 	assertLiteralExpression(t, "x", function.Parameters[0])
 	assertLiteralExpression(t, "y", function.Parameters[1])
 	assert.Len(t, function.Body.Statements, 1, "wrong number of function body statements")
-	bodyStmt := testExpressionStatement(t, function.Body.Statements[0])
+	bodyStmt := assertExpressionStatement(t, function.Body.Statements[0])
 	assertInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
 }
 
@@ -199,7 +199,7 @@ func TestMainFunctionParameterParsing(t *testing.T) {
 
 	for _, tt := range tests {
 		program := setupProgram(t, tt.input, 0)
-		stmt := testExpressionStatement(t, program.Statements[0])
+		stmt := assertExpressionStatement(t, program.Statements[0])
 		function := stmt.Expression.(*ast.FunctionLiteral)
 		assert.Len(t, function.Parameters, len(tt.expectedParams), "length of parameters wrong")
 		for idx, ident := range tt.expectedParams {
@@ -211,7 +211,7 @@ func TestMainFunctionParameterParsing(t *testing.T) {
 func TestCallExpressionParsing(t *testing.T) {
 	input := "add(1, 2 * 3, 4 + 5);"
 	program := setupProgram(t, input, 1)
-	stmt := testExpressionStatement(t, program.Statements[0])
+	stmt := assertExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.CallExpression)
 	require.Truef(t, ok, "expected expression to be CallExpression, got %T", stmt.Expression)
 	assertIdentifier(t, "add", exp.Function)
@@ -251,14 +251,14 @@ func checkParserErrors(t *testing.T, p *parser.Parser) {
 	t.FailNow()
 }
 
-func testExpressionStatement(t *testing.T, stmt ast.Statement) *ast.ExpressionStatement {
+func assertExpressionStatement(t *testing.T, stmt ast.Statement) *ast.ExpressionStatement {
 	t.Helper()
 	exp, ok := stmt.(*ast.ExpressionStatement)
 	require.Truef(t, ok, "expected statement to be ExpressionStatement, got %T", stmt)
 	return exp
 }
 
-func testLetStatement(t *testing.T, name string, stmt ast.Statement) {
+func assertLetStatement(t *testing.T, name string, stmt ast.Statement) {
 	t.Helper()
 	assert.Equal(t, "let", stmt.TokenLiteral(), "TokenLiteral not 'let'")
 	letStmt, ok := stmt.(*ast.LetStatement)
