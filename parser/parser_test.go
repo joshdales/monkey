@@ -187,6 +187,27 @@ func TestFunctionLiteralParsing(t *testing.T) {
 	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
 }
 
+func TestMainFunctionParameterParsing(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedParams []string
+	}{
+		{input: "fn() {}", expectedParams: []string{}},
+		{input: "fn(x) {}", expectedParams: []string{"x"}},
+		{input: "fn(x, y, z) {}", expectedParams: []string{"x", "y", "z"}},
+	}
+
+	for _, tt := range tests {
+		program := setupProgram(t, tt.input, 0)
+		stmt := testExpressionStatement(t, program.Statements[0])
+		function := stmt.Expression.(*ast.FunctionLiteral)
+		assert.Len(t, function.Parameters, len(tt.expectedParams), "length of parameters wrong")
+		for idx, ident := range tt.expectedParams {
+			testLiteralExpression(t, ident, function.Parameters[idx])
+		}
+	}
+}
+
 // Test Helpers
 
 func setupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
