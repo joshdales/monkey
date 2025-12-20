@@ -151,6 +151,21 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 	}
 }
 
+func TestIfExpression(t *testing.T) {
+	input := `if (x < y) { x }`
+	program := setupTests(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	require.True(t, ok)
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	require.True(t, ok)
+	testInfixExpression(t, exp, "x", "<", "y")
+	assert.Len(t, exp.Consequence.Statements, 1)
+	consequence, ok := exp.Consequence.Statements[0].(*ast.ExpressionStatement)
+	require.True(t, ok)
+	testIdentifier(t, "x", consequence.Expression)
+	require.Nil(t, exp.Alternative)
+}
+
 // Test Helpers
 
 func setupTests(t *testing.T, input string, stmtLen int) *ast.Program {
