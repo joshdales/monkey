@@ -3,7 +3,7 @@ package ast
 import "monkey/token"
 
 type Boolean struct {
-	Token token.Token // The `token.TRUE` or `token.FALSE` value
+	Token token.Token // The `token.TRUE` or `token.FALSE` token
 	Value bool
 }
 

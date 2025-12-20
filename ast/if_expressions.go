@@ -6,7 +6,7 @@ import (
 )
 
 type IfExpression struct {
-	Token       token.Token // The `if` token
+	Token       token.Token // The `token.IF` token
 	Condition   Expression
 	Consequence *BlockStatement
 	Alternative *BlockStatement
