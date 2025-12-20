@@ -187,7 +187,7 @@ func TestFunctionLiteralParsing(t *testing.T) {
 	assertInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
 }
 
-func TestMainFunctionParameterParsing(t *testing.T) {
+func TestFunctionParameterParsing(t *testing.T) {
 	tests := []struct {
 		input          string
 		expectedParams []string
@@ -219,6 +219,31 @@ func TestCallExpressionParsing(t *testing.T) {
 	assertLiteralExpression(t, 1, exp.Arguments[0])
 	assertInfixExpression(t, exp.Arguments[1], 2, "*", 3)
 	assertInfixExpression(t, exp.Arguments[2], 4, "+", 5)
+}
+
+func TestCallExpressionParameterParsing(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedIdent string
+		expectedArgs  []string
+	}{
+		{input: "add();", expectedIdent: "add", expectedArgs: []string{}},
+		{input: "add(1);", expectedIdent: "add", expectedArgs: []string{"1"}},
+		{input: "add(1, 2 * 3, 4 + 5);", expectedIdent: "add", expectedArgs: []string{"1", "(2 + 3)", "(4 + 5)"}},
+	}
+
+	for _, tt := range tests {
+		program := setupProgram(t, tt.input, 0)
+		stmt := assertExpressionStatement(t, program.Statements[0])
+
+		exp, ok := stmt.Expression.(*ast.CallExpression)
+		require.Truef(t, ok, "expected expression to be CallExpression, got %T", stmt.Expression)
+		assert.Len(t, exp.Arguments, len(tt.expectedArgs), "length of arguments wrong")
+
+		for idx, arg := range tt.expectedArgs {
+			assert.Equal(t, arg, exp.Arguments[idx])
+		}
+	}
 }
 
 // Test Helpers
