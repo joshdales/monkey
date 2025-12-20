@@ -147,7 +147,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 }
 
 func TestIfExpression(t *testing.T) {
-	input := `if (x < y) { x }`
+	input := "if (x < y) { x }"
 	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.IfExpression)
@@ -160,7 +160,7 @@ func TestIfExpression(t *testing.T) {
 }
 
 func TestIfElseExpression(t *testing.T) {
-	input := `if (x < y) { x } else { y }`
+	input := "if (x < y) { x } else { y }"
 	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.IfExpression)
@@ -174,7 +174,7 @@ func TestIfElseExpression(t *testing.T) {
 }
 
 func TestFunctionLiteralParsing(t *testing.T) {
-	input := `fn(x, y) { x + y }`
+	input := "fn(x, y) { x + y }"
 	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	function, ok := stmt.Expression.(*ast.FunctionLiteral)
@@ -206,6 +206,19 @@ func TestMainFunctionParameterParsing(t *testing.T) {
 			testLiteralExpression(t, ident, function.Parameters[idx])
 		}
 	}
+}
+
+func TestCallExpressionParsing(t *testing.T) {
+	input := "add(1, 2 * 3, 4 + 5);"
+	program := setupProgram(t, input, 1)
+	stmt := testExpressionStatement(t, program.Statements[0])
+	exp, ok := stmt.Expression.(*ast.CallExpression)
+	require.Truef(t, ok, "expected expression to be CallExpression, got %T", stmt.Expression)
+	testIdentifier(t, "add", exp.Function)
+	assert.Len(t, exp.Arguments, 3, "length of arguments wrong")
+	testLiteralExpression(t, 1, exp.Arguments[0])
+	testInfixExpression(t, exp.Arguments[1], 2, "*", 3)
+	testInfixExpression(t, exp.Arguments[2], 4, "+", 5)
 }
 
 // Test Helpers
