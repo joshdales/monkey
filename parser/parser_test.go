@@ -18,7 +18,7 @@ let y = 10;
 let foobar = 838383;
 `
 
-	program := setupTests(t, input, 3)
+	program := setupProgram(t, input, 3)
 	tests := []struct{ expectedIdentifier string }{
 		{"x"},
 		{"y"},
@@ -37,7 +37,7 @@ return 5;
 return 10;
 return 993322;
 `
-	program := setupTests(t, input, 3)
+	program := setupProgram(t, input, 3)
 	for _, stmt := range program.Statements {
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
 		require.Truef(t, ok, "expected statement to be ReturnStatement, got %T", stmt)
@@ -47,21 +47,21 @@ return 993322;
 
 func TestIdentifierExpression(t *testing.T) {
 	input := "foobar;"
-	program := setupTests(t, input, 1)
+	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	testLiteralExpression(t, "foobar", stmt.Expression)
 }
 
 func TestIntegerLiteralExpression(t *testing.T) {
 	input := "5;"
-	program := setupTests(t, input, 1)
+	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	testLiteralExpression(t, 5, stmt.Expression)
 }
 
 func TestBooleanExpression(t *testing.T) {
 	input := "true;"
-	program := setupTests(t, input, 1)
+	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	testLiteralExpression(t, true, stmt.Expression)
 }
@@ -79,7 +79,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	}
 
 	for _, tt := range prefixTests {
-		program := setupTests(t, tt.input, 1)
+		program := setupProgram(t, tt.input, 1)
 		stmt := testExpressionStatement(t, program.Statements[0])
 		testPrefixExpression(t, stmt.Expression, tt.operator, tt.value)
 	}
@@ -106,7 +106,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 	}
 
 	for _, tt := range infixTests {
-		program := setupTests(t, tt.input, 1)
+		program := setupProgram(t, tt.input, 1)
 		stmt := testExpressionStatement(t, program.Statements[0])
 		testInfixExpression(t, stmt.Expression, tt.leftValue, tt.operator, tt.rightValue)
 	}
@@ -140,7 +140,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		program := setupTests(t, tt.input, 0)
+		program := setupProgram(t, tt.input, 0)
 		actual := program.String()
 		assert.Equal(t, tt.expected, actual)
 	}
@@ -148,7 +148,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 
 func TestIfExpression(t *testing.T) {
 	input := `if (x < y) { x }`
-	program := setupTests(t, input, 1)
+	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.IfExpression)
 	require.Truef(t, ok, "expected IfStatement, got %T", stmt.Expression)
@@ -161,7 +161,7 @@ func TestIfExpression(t *testing.T) {
 
 func TestIfElseExpression(t *testing.T) {
 	input := `if (x < y) { x } else { y }`
-	program := setupTests(t, input, 1)
+	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	exp, ok := stmt.Expression.(*ast.IfExpression)
 	require.Truef(t, ok, "expected expression to be IfExpression, got %T", exp)
@@ -175,7 +175,7 @@ func TestIfElseExpression(t *testing.T) {
 
 func TestFunctionLiteralParsing(t *testing.T) {
 	input := `fn(x, y) { x + y }`
-	program := setupTests(t, input, 1)
+	program := setupProgram(t, input, 1)
 	stmt := testExpressionStatement(t, program.Statements[0])
 	function, ok := stmt.Expression.(*ast.FunctionLiteral)
 	require.Truef(t, ok, "expected expression to be FunctionLiteral, got %T", stmt.Expression)
@@ -189,7 +189,7 @@ func TestFunctionLiteralParsing(t *testing.T) {
 
 // Test Helpers
 
-func setupTests(t *testing.T, input string, stmtLen int) *ast.Program {
+func setupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
 	t.Helper()
 	l := lexer.New(input)
 	p := parser.New(l)
