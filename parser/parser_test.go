@@ -173,6 +173,20 @@ func TestIfElseExpression(t *testing.T) {
 	testIdentifier(t, "y", alternative.Expression)
 }
 
+func TestFunctionLiteralParsing(t *testing.T) {
+	input := `fn(x, y) { x + y }`
+	program := setupTests(t, input, 1)
+	stmt := testExpressionStatement(t, program.Statements[0])
+	function, ok := stmt.Expression.(*ast.FunctionLiteral)
+	require.Truef(t, ok, "expected expression to be FunctionLiteral, got %T", stmt.Expression)
+	assert.Len(t, function.Parameters, 2, "wrong number of function parameters")
+	testLiteralExpression(t, "x", function.Parameters[0])
+	testLiteralExpression(t, "y", function.Parameters[1])
+	assert.Len(t, function.Body.Statements, 1, "wrong number of function body statements")
+	bodyStmt := testExpressionStatement(t, function.Body.Statements[0])
+	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+}
+
 // Test Helpers
 
 func setupTests(t *testing.T, input string, stmtLen int) *ast.Program {
