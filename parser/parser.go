@@ -32,6 +32,7 @@ type Parser struct {
 }
 
 func New(l *lexer.Lexer) *Parser {
+	checkTraceEnabled()
 	p := &Parser{l: l, errors: []string{}}
 
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)

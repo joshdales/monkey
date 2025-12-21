@@ -8,13 +8,13 @@ import (
 	"monkey/parser"
 )
 
-const PROMPT = ">> "
+const prompt = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 
 	for {
-		fmt.Fprint(out, PROMPT)
+		fmt.Fprint(out, prompt)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
