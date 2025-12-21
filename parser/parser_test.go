@@ -229,7 +229,7 @@ func TestCallExpressionParameterParsing(t *testing.T) {
 	}{
 		{input: "add();", expectedIdent: "add", expectedArgs: []string{}},
 		{input: "add(1);", expectedIdent: "add", expectedArgs: []string{"1"}},
-		{input: "add(1, 2 * 3, 4 + 5);", expectedIdent: "add", expectedArgs: []string{"1", "(2 + 3)", "(4 + 5)"}},
+		{input: "add(1, 2 * 3, 4 + 5);", expectedIdent: "add", expectedArgs: []string{"1", "(2 * 3)", "(4 + 5)"}},
 	}
 
 	for _, tt := range tests {
@@ -241,7 +241,7 @@ func TestCallExpressionParameterParsing(t *testing.T) {
 		assert.Len(t, exp.Arguments, len(tt.expectedArgs), "length of arguments wrong")
 
 		for idx, arg := range tt.expectedArgs {
-			assert.Equal(t, arg, exp.Arguments[idx])
+			assert.Equal(t, arg, exp.Arguments[idx].String())
 		}
 	}
 }
