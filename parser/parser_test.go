@@ -12,22 +12,22 @@ import (
 )
 
 func TestLetStatements(t *testing.T) {
-	input := `
-let x = 5;
-let y = 10;
-let foobar = 838383;
-`
-
-	program := setupProgram(t, input, 3)
-	tests := []struct{ expectedIdentifier string }{
-		{"x"},
-		{"y"},
-		{"foobar"},
+	tests := []struct {
+		input              string
+		expectedIdentifier string
+		expectedValue      any
+	}{
+		{"let x = 5;", "x", 5},
+		{"let y = true;", "y", true},
+		{"let foobar = y;", "foobar", "y"},
 	}
 
-	for i, tt := range tests {
-		stmt := program.Statements[i]
+	for _, tt := range tests {
+		program := setupProgram(t, tt.input, 1)
+		stmt := program.Statements[0]
 		assertLetStatement(t, tt.expectedIdentifier, stmt)
+		val := stmt.(*ast.LetStatement).Value
+		assertLiteralExpression(t, tt.expectedValue, val)
 	}
 }
 
@@ -295,7 +295,7 @@ func assertLetStatement(t *testing.T, name string, stmt ast.Statement) {
 	assert.Equal(t, name, letStmt.Name.TokenLiteral())
 }
 
-func assertLiteralExpression(t *testing.T, expected interface{}, exp ast.Expression) {
+func assertLiteralExpression(t *testing.T, expected any, exp ast.Expression) {
 	t.Helper()
 	switch value := expected.(type) {
 	case int:
