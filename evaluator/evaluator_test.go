@@ -88,6 +88,31 @@ func TestBangOperator(t *testing.T) {
 	}
 }
 
+func TestIfElseExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{"if (true) { 10 }", 10},
+		{"if (false) { 10 }", nil},
+		{"if (1) { 10 }", 10},
+		{"if (1 < 2) { 10 }", 10},
+		{"if (1 > 2) { 10 }", nil},
+		{"if (1 > 2) { 10 } else { 20 }", 20},
+		{"if (1 < 2) { 10 } else { 20 }", 10},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			assertIntegerObject(t, int64(integer), evaluated)
+		} else {
+			assertNullObject(t, evaluated)
+		}
+	}
+}
+
 func testEval(t *testing.T, input string) object.Object {
 	t.Helper()
 
@@ -112,4 +137,10 @@ func assertBooleanObject(t *testing.T, expected bool, obj object.Object) {
 	result, ok := obj.(*object.Boolean)
 	require.Truef(t, ok, "object is not an Boolean, got %T (%+v)", obj, obj)
 	assert.Equal(t, expected, result.Value)
+}
+
+func assertNullObject(t *testing.T, obj object.Object) {
+	t.Helper()
+
+	assert.Equalf(t, evaluator.NULL, obj, "object is not NULL, got %T (%+v)", obj, obj)
 }
