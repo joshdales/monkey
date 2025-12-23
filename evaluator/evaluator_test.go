@@ -82,6 +82,7 @@ func TestBangOperator(t *testing.T) {
 		{"!!false", false},
 		{"!!true", true},
 	}
+
 	for _, tt := range tests {
 		evaluated := testEval(t, tt.input)
 		assertBooleanObject(t, tt.expected, evaluated)
@@ -120,9 +121,10 @@ func TestReturnStatement(t *testing.T) {
 	}{
 		{"return 10;", 10},
 		{"return 10; 9;", 10},
-		{"return 5 * 5; 9;", 10},
+		{"return 5 * 2; 9;", 10},
 		{"9; return 2 * 5; 9", 10},
 	}
+
 	for _, tt := range testCases {
 		evaluated := testEval(t, tt.input)
 		assertIntegerObject(t, tt.expected, evaluated)
