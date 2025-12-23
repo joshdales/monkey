@@ -3,8 +3,9 @@ package object
 type ObjectType string
 
 const (
-	INTEGER_OBJ = "INTEGER"
-	BOOLEAN_OBJ = "BOOLEAN"
+	INTEGER_OBJ ObjectType = "INTEGER"
+	BOOLEAN_OBJ ObjectType = "BOOLEAN"
+	NULL_OBJ    ObjectType = "NULL"
 )
 
 type Object interface {
