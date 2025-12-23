@@ -2,6 +2,17 @@ package parser
 
 import "monkey/token"
 
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // `==`
+	LESSGREATER // `>` or `<`
+	SUM         // `+`
+	PRODUCT     // `*`
+	PREFIX      // `-X` or `!X`
+	CALL        // `myfunction(X)`
+)
+
 var precedences = map[token.TokenType]int{
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
