@@ -7,7 +7,7 @@ const (
 	BOOLEAN_OBJ      ObjectType = "BOOLEAN"
 	NULL_OBJ         ObjectType = "NULL"
 	RETURN_VALUE_OBJ ObjectType = "RETURN_VALUE"
-	ERROR_OBJECT     ObjectType = "ERROR"
+	ERROR_OBJ        ObjectType = "ERROR"
 )
 
 type Object interface {
