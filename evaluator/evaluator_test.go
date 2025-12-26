@@ -194,9 +194,10 @@ func testEval(t *testing.T, input string) object.Object {
 
 	l := lexer.New(input)
 	p := parser.New(l)
+	env := object.NewEnvironment()
 	program := p.ParseProgram()
 
-	return evaluator.Eval(program)
+	return evaluator.Eval(env, program)
 }
 
 func assertIntegerObject(t *testing.T, expected int64, obj object.Object) {
