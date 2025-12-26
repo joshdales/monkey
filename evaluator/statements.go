@@ -5,11 +5,11 @@ import (
 	"monkey/object"
 )
 
-func evalProgram(program *ast.Program) object.Object {
+func evalProgram(env *object.Environment, program *ast.Program) object.Object {
 	var result object.Object
 
 	for _, statement := range program.Statements {
-		result = Eval(statement)
+		result = Eval(env, statement)
 
 		switch result := result.(type) {
 		case *object.ReturnValue:
@@ -22,11 +22,11 @@ func evalProgram(program *ast.Program) object.Object {
 	return result
 }
 
-func evalBlockStatements(block *ast.BlockStatement) object.Object {
+func evalBlockStatements(env *object.Environment, block *ast.BlockStatement) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
-		result = Eval(statement)
+		result = Eval(env, statement)
 
 		if result != nil {
 			rt := result.Type()
@@ -39,16 +39,16 @@ func evalBlockStatements(block *ast.BlockStatement) object.Object {
 	return result
 }
 
-func evalIfStatement(ie *ast.IfExpression) object.Object {
-	condition := Eval(ie.Condition)
+func evalIfStatement(env *object.Environment, ie *ast.IfExpression) object.Object {
+	condition := Eval(env, ie.Condition)
 	if isError(condition) {
 		return condition
 	}
 
 	if isTruthy(condition) {
-		return Eval(ie.Consequence)
+		return Eval(env, ie.Consequence)
 	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative)
+		return Eval(env, ie.Alternative)
 	} else {
 		return NULL
 	}

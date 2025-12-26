@@ -12,36 +12,41 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func Eval(node ast.Node) object.Object {
+func Eval(env *object.Environment, node ast.Node) object.Object {
 	switch node := node.(type) {
 	// Statements
 	case *ast.Program:
-		return evalProgram(node)
+		return evalProgram(env, node)
 	case *ast.BlockStatement:
-		return evalBlockStatements(node)
+		return evalBlockStatements(env, node)
 	case *ast.IfExpression:
-		return evalIfStatement(node)
+		return evalIfStatement(env, node)
+	case *ast.LetStatement:
+		val := Eval(env, node.Value)
+		if isError(val) {
+			return val
+		}
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression)
+		return Eval(env, node.Expression)
 	case *ast.ReturnStatement:
-		val := Eval(node.ReturnValue)
+		val := Eval(env, node.ReturnValue)
 		if isError(val) {
 			return val
 		}
 		return &object.ReturnValue{Value: val}
 	// Expressions
 	case *ast.PrefixExpression:
-		right := Eval(node.Right)
+		right := Eval(env, node.Right)
 		if isError(right) {
 			return right
 		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		left := Eval(node.Left)
+		left := Eval(env, node.Left)
 		if isError(left) {
 			return left
 		}
-		right := Eval(node.Right)
+		right := Eval(env, node.Right)
 		if isError(right) {
 			return right
 		}
@@ -50,9 +55,9 @@ func Eval(node ast.Node) object.Object {
 		return &object.Integer{Value: node.Value}
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
-	default:
-		return nil
 	}
+
+	return nil
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
