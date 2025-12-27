@@ -92,3 +92,37 @@ func evalExpressions(env *object.Environment, exps []ast.Expression) []object.Ob
 
 	return result
 }
+
+func evalCallExpression(env *object.Environment, exp *ast.CallExpression) object.Object {
+	function := Eval(env, exp.Function)
+	if isError(function) {
+		return function
+	}
+	args := evalExpressions(env, exp.Arguments)
+	if len(args) == 1 && isError(args[0]) {
+		return args[0]
+	}
+
+	return applyFunction(function, args)
+}
+
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	function, ok := fn.(*object.Function)
+	if !ok {
+		return newError("not a function: %s", fn.Type())
+	}
+
+	extendedEnv := extendFunctionEnv(function, args)
+	evaluated := Eval(extendedEnv, function.Body)
+	return unwrapReturnValue(evaluated)
+}
+
+func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
+	env := object.NewEnclosingEnvironment(fn.Env)
+
+	for paramIdx, param := range fn.Parameters {
+		env.Set(param.Value, args[paramIdx])
+	}
+
+	return env
+}
