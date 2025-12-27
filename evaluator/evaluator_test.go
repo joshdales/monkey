@@ -187,6 +187,16 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
+func TestFunctionObject(t *testing.T) {
+	input := "fn(x) { x + 2; };"
+	evaluated := testEval(t, input)
+	fn, ok := evaluated.(*object.Function)
+	require.Truef(t, ok, "object is not a Function, got %T ((%+v))", evaluated, evaluated)
+	assert.Len(t, fn.Parameters, 1, "function has wrong number of parameters")
+	assert.Equal(t, "x", fn.Parameters[0].String())
+	assert.Equal(t, "(x + 2)", fn.Body.String())
+}
+
 // Test helpers
 
 func testEval(t *testing.T, input string) object.Object {
