@@ -59,6 +59,15 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	assertLiteralExpression(t, 5, stmt.Expression)
 }
 
+func TestStringLiteralExpression(t *testing.T) {
+	input := `"hello world";`
+	program := setupProgram(t, input, 1)
+	stmt := assertExpressionStatement(t, program.Statements[0])
+	literal, ok := stmt.Expression.(*ast.StringLiteral)
+	require.True(t, ok, "expected expression to be StringLiteral, got %t", stmt)
+	assert.Equal(t, "hello world", literal.Value)
+}
+
 func TestBooleanExpression(t *testing.T) {
 	input := "true;"
 	program := setupProgram(t, input, 1)
