@@ -58,7 +58,7 @@ func TestStringLiteral(t *testing.T) {
 }
 
 func TestArrayLiterals(t *testing.T) {
-	input := `"[1, 2 * 2, 3 + 3]"`
+	input := `[1, 2 * 2, 3 + 3]`
 	evaluated := testEval(t, input)
 	array, ok := evaluated.(*object.Array)
 	require.Truef(t, ok, "object is not Array, got %T (%+v)", evaluated, evaluated)
