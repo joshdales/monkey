@@ -38,13 +38,23 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 }
 
-func TestEvalStringLiteral(t *testing.T) {
-	input := `"Hello World!"`
+func TestStringLiteral(t *testing.T) {
 
-	evaluated := testEval(t, input)
-	str, ok := evaluated.(*object.String)
-	require.Truef(t, ok, "object is not string, got %T (%+v)", evaluated, evaluated)
-	assert.Equal(t, "Hello World!", str.Value)
+	t.Run("Eval Strings", func(t *testing.T) {
+		input := `"Hello World!"`
+		evaluated := testEval(t, input)
+		str, ok := evaluated.(*object.String)
+		require.Truef(t, ok, "object is not string, got %T (%+v)", evaluated, evaluated)
+		assert.Equal(t, "Hello World!", str.Value)
+	})
+
+	t.Run("String contamination", func(t *testing.T) {
+		input := `"Hello" + " " + "World!"`
+		evaluated := testEval(t, input)
+		str, ok := evaluated.(*object.String)
+		require.Truef(t, ok, "object is not string, got %T (%+v)", evaluated, evaluated)
+		assert.Equal(t, "Hello World!", str.Value)
+	})
 }
 
 func TestEvalBooleanExpression(t *testing.T) {
