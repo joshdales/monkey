@@ -119,6 +119,12 @@ func (l *Lexer) readString() string {
 	position := l.position + 1
 	for {
 		l.readChar()
+		if l.char == '\\' && l.peekChar() == '"' {
+			l.readChar()
+			l.readChar()
+		}
+		// TODO: Add support for more string literals
+
 		if l.char == '"' || l.char == 0 {
 			break
 		}

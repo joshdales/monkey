@@ -30,6 +30,7 @@ if (5 < 10) {
 10 != 9;
 "foobar";
 "foo bar";
+"hello \"world\"";
 `
 
 	tests := []struct {
@@ -113,6 +114,7 @@ if (5 < 10) {
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foo bar"},
 		{token.SEMICOLON, ";"},
+		{token.STRING, `hello \"world\"`},
 		{token.EOF, ""},
 	}
 
