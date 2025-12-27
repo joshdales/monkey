@@ -1,6 +1,9 @@
 package evaluator
 
-import "monkey/object"
+import (
+	"monkey/ast"
+	"monkey/object"
+)
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
 	switch operator {
@@ -73,4 +76,19 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
+}
+
+func evalExpressions(env *object.Environment, exps []ast.Expression) []object.Object {
+	result := make([]object.Object, 0, len(exps))
+
+	for _, exp := range exps {
+		evaluated := Eval(env, exp)
+		if isError(evaluated) {
+			return []object.Object{evaluated}
+		}
+
+		result = append(result, evaluated)
+	}
+
+	return result
 }
