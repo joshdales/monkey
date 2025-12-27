@@ -8,6 +8,7 @@ const (
 	NULL_OBJ         ObjectType = "NULL"
 	RETURN_VALUE_OBJ ObjectType = "RETURN_VALUE"
 	ERROR_OBJ        ObjectType = "ERROR"
+	FUNCTION_OBJ     ObjectType = "FUNCTION"
 )
 
 type Object interface {
