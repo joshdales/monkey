@@ -57,6 +57,16 @@ func TestStringLiteral(t *testing.T) {
 	})
 }
 
+func TestArrayLiterals(t *testing.T) {
+	input := `"[1, 2 * 2, 3 + 3]"`
+	evaluated := testEval(t, input)
+	array, ok := evaluated.(*object.Array)
+	require.Truef(t, ok, "object is not Array, got %T (%+v)", evaluated, evaluated)
+	assertIntegerObject(t, 1, array.Elements[0])
+	assertIntegerObject(t, 4, array.Elements[1])
+	assertIntegerObject(t, 6, array.Elements[2])
+}
+
 func TestEvalBooleanExpression(t *testing.T) {
 	tests := []struct {
 		input    string
