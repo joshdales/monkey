@@ -269,6 +269,16 @@ func TestArrayParsing(t *testing.T) {
 	assertInfixExpression(t, array.Elements[2], 3, "+", 3)
 }
 
+func TestIndexExpressionParsing(t *testing.T) {
+	input := "myArray[1 + 1]"
+	program := setupProgram(t, input, 1)
+	stmt := assertExpressionStatement(t, program.Statements[0])
+	idxExp, ok := stmt.Expression.(*ast.IndexExpression)
+	require.Truef(t, ok, "expected expression to be IndexExpression, got %T", stmt.Expression)
+	assertIdentifier(t, "myArray", idxExp.Left)
+	assertInfixExpression(t, idxExp.Index, 1, "+", 1)
+}
+
 // Test Helpers
 
 func setupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
