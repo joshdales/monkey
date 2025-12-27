@@ -27,6 +27,7 @@ func Eval(env *object.Environment, node ast.Node) object.Object {
 			return val
 		}
 		env.Set(node.Name.Value, val)
+		return nil
 	case *ast.ExpressionStatement:
 		return Eval(env, node.Expression)
 	case *ast.ReturnStatement:
@@ -67,9 +68,9 @@ func Eval(env *object.Environment, node ast.Node) object.Object {
 		return nativeBoolToBooleanObject(node.Value)
 	case *ast.Identifier:
 		return evalIdentifier(env, node)
+	default:
+		return nil
 	}
-
-	return nil
 }
 
 func evalIdentifier(env *object.Environment, node *ast.Identifier) object.Object {
