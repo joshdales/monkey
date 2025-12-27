@@ -258,6 +258,17 @@ func TestCallExpressionParameterParsing(t *testing.T) {
 	}
 }
 
+func TestArrayParsing(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+	program := setupProgram(t, input, 1)
+	stmt := assertExpressionStatement(t, program.Statements[0])
+	array, ok := stmt.Expression.(*ast.ArrayLiteral)
+	require.Truef(t, ok, "expected expression to be ArrayLiteral, got %T", stmt.Expression)
+	assertIntegerLiteral(t, 1, array.Elements[0])
+	assertInfixExpression(t, array.Elements[1], 2, "*", 2)
+	assertInfixExpression(t, array.Elements[2], 3, "+", 3)
+}
+
 // Test Helpers
 
 func setupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
