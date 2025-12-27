@@ -40,7 +40,7 @@ func TestEvalIntegerExpression(t *testing.T) {
 
 func TestStringLiteral(t *testing.T) {
 
-	t.Run("Eval Strings", func(t *testing.T) {
+	t.Run("Eval", func(t *testing.T) {
 		input := `"Hello World!"`
 		evaluated := testEval(t, input)
 		str, ok := evaluated.(*object.String)
@@ -48,7 +48,7 @@ func TestStringLiteral(t *testing.T) {
 		assert.Equal(t, "Hello World!", str.Value)
 	})
 
-	t.Run("String contamination", func(t *testing.T) {
+	t.Run("String concatenation", func(t *testing.T) {
 		input := `"Hello" + " " + "World!"`
 		evaluated := testEval(t, input)
 		str, ok := evaluated.(*object.String)
@@ -181,6 +181,7 @@ func TestErrorHandling(t *testing.T) {
 			}
 		`, "unknown operator: BOOLEAN + BOOLEAN"},
 		{"foobar", "identifier not found: foobar"},
+		{`"Hello" - "World"`, "unknown operator: STRING - STRING"},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(t, tt.input)
