@@ -206,44 +206,47 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
-func TestFunctionObject(t *testing.T) {
-	input := "fn(x) { x + 2; };"
-	evaluated := testEval(t, input)
-	fn, ok := evaluated.(*object.Function)
-	require.Truef(t, ok, "object is not a Function, got %T ((%+v))", evaluated, evaluated)
-	assert.Len(t, fn.Parameters, 1, "function has wrong number of parameters")
-	assert.Equal(t, "x", fn.Parameters[0].String())
-	assert.Equal(t, "(x + 2)", fn.Body.String())
-}
+func TestFunctions(t *testing.T) {
+	t.Run("function object", func(t *testing.T) {
 
-func TestFunctionApplication(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected int64
-	}{
-		{"let identity = fn(x) { x; }; identity(5);", 5},
-		{"let identity = fn(x) { return x; }; identity(5);", 5},
-		{"let double = fn(x) { x * 2; }; double(5);", 10},
-		{"let add = fn(x, y) { x + y; }; add(5, 5);", 10},
-		{"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
-		{"fn(x) { x; }(5)", 5},
-	}
+		input := "fn(x) { x + 2; };"
+		evaluated := testEval(t, input)
+		fn, ok := evaluated.(*object.Function)
+		require.Truef(t, ok, "object is not a Function, got %T ((%+v))", evaluated, evaluated)
+		assert.Len(t, fn.Parameters, 1, "function has wrong number of parameters")
+		assert.Equal(t, "x", fn.Parameters[0].String())
+		assert.Equal(t, "(x + 2)", fn.Body.String())
+	})
 
-	for _, tt := range tests {
-		assertIntegerObject(t, tt.expected, testEval(t, tt.input))
-	}
-}
+	t.Run("function application", func(t *testing.T) {
+		tests := []struct {
+			input    string
+			expected int64
+		}{
+			{"let identity = fn(x) { x; }; identity(5);", 5},
+			{"let identity = fn(x) { return x; }; identity(5);", 5},
+			{"let double = fn(x) { x * 2; }; double(5);", 10},
+			{"let add = fn(x, y) { x + y; }; add(5, 5);", 10},
+			{"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
+			{"fn(x) { x; }(5)", 5},
+		}
 
-func TestClosures(t *testing.T) {
-	input := `
-	let newAdder = fn(x) {
-		fn(y) { x + y };
-	};
+		for _, tt := range tests {
+			assertIntegerObject(t, tt.expected, testEval(t, tt.input))
+		}
+	})
 
-	let addTwo = newAdder(2);
-	addTwo(2);`
+	t.Run("Closures", func(t *testing.T) {
+		input := `
+		let newAdder = fn(x) {
+			fn(y) { x + y };
+		};
 
-	assertIntegerObject(t, 4, testEval(t, input))
+		let addTwo = newAdder(2);
+		addTwo(2);`
+
+		assertIntegerObject(t, 4, testEval(t, input))
+	})
 }
 
 // Test helpers
