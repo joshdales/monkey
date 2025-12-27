@@ -110,7 +110,9 @@ if (5 < 10) {
 		{token.INT, "9"},
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
+		{token.SEMICOLON, ";"},
 		{token.STRING, "foo bar"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 
