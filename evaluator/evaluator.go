@@ -55,6 +55,16 @@ func Eval(env *object.Environment, node ast.Node) object.Object {
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.CallExpression:
 		return evalCallExpression(env, node)
+	case *ast.IndexExpression:
+		left := Eval(env, node.Left)
+		if isError(left) {
+			return left
+		}
+		index := Eval(env, node.Index)
+		if isError(index) {
+			return index
+		}
+		return evalIndexExpression(left, index)
 	// Literals
 	case *ast.FunctionLiteral:
 		params := node.Parameters

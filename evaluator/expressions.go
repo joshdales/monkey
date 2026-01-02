@@ -110,6 +110,27 @@ func evalExpressions(env *object.Environment, exps []ast.Expression) []object.Ob
 	return result
 }
 
+func evalIndexExpression(left, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		return evalArrayIndexExpression(left, index)
+	default:
+		return newError("index operator not supported: %s", left.Type())
+	}
+}
+
+func evalArrayIndexExpression(array, index object.Object) object.Object {
+	arr := array.(*object.Array)
+	idx := index.(*object.Integer).Value
+	max := int64(len(arr.Elements) - 1)
+
+	if idx < 0 || idx > max {
+		return NULL
+	}
+
+	return arr.Elements[idx]
+}
+
 func evalCallExpression(env *object.Environment, exp *ast.CallExpression) object.Object {
 	function := Eval(env, exp.Function)
 	if isError(function) {
