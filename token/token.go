@@ -28,6 +28,7 @@ const (
 	// Denominators
 
 	COMMA     TokenType = ","
+	COLON     TokenType = ":"
 	SEMICOLON TokenType = ";"
 	LPAREN    TokenType = "("
 	RPAREN    TokenType = ")"
