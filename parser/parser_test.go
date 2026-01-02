@@ -271,6 +271,110 @@ func TestArrayParsing(t *testing.T) {
 	assertInfixExpression(t, array.Elements[2], 3, "+", 3)
 }
 
+func TestHashLiteralParsing(t *testing.T) {
+	t.Run("with string keys", func(t *testing.T) {
+		input := `{"one": 1, "two": 2, "three": 3}`
+		program := setupProgram(t, input, 0)
+		stmt := assertExpressionStatement(t, program.Statements[0])
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		require.Truef(t, ok, "expected expression to be HashLiteral, got %T", stmt.Expression)
+		require.Len(t, hash.Pairs, 3)
+
+		expected := map[string]int64{
+			"one":   1,
+			"two":   2,
+			"three": 3,
+		}
+
+		for key, value := range hash.Pairs {
+			literal, ok := key.(*ast.StringLiteral)
+			require.Truef(t, ok, "key is not a string literal, got %T", key)
+			expectedValue := expected[literal.String()]
+			assertIntegerLiteral(t, expectedValue, value)
+		}
+	})
+
+	t.Run("with integer keys", func(t *testing.T) {
+		input := `{1: "one", 2: "two", 3: "three"}`
+		program := setupProgram(t, input, 0)
+		stmt := assertExpressionStatement(t, program.Statements[0])
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		require.Truef(t, ok, "expected expression to be HashLiteral, got %T", stmt.Expression)
+		require.Len(t, hash.Pairs, 3)
+
+		expected := map[int64]string{
+			1: "one",
+			2: "two",
+			3: "three",
+		}
+
+		for key, value := range hash.Pairs {
+			literal, ok := key.(*ast.IntegerLiteral)
+			require.Truef(t, ok, "key is not a integer literal, got %T", key)
+			expectedValue := expected[literal.Value]
+			assert.Equal(t, expectedValue, value.String())
+		}
+	})
+
+	t.Run("with boolean keys", func(t *testing.T) {
+		input := `{true: 1, false: 0}`
+		program := setupProgram(t, input, 0)
+		stmt := assertExpressionStatement(t, program.Statements[0])
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		require.Truef(t, ok, "expected expression to be HashLiteral, got %T", stmt.Expression)
+		require.Len(t, hash.Pairs, 2)
+
+		expected := map[bool]int64{
+			true:  1,
+			false: 0,
+		}
+
+		for key, value := range hash.Pairs {
+			literal, ok := key.(*ast.Boolean)
+			require.Truef(t, ok, "key is not a boolean, got %T", key)
+			expectedValue := expected[literal.Value]
+			assertIntegerLiteral(t, expectedValue, value)
+		}
+	})
+
+	t.Run("with expression values", func(t *testing.T) {
+		input := `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`
+		program := setupProgram(t, input, 0)
+		stmt := assertExpressionStatement(t, program.Statements[0])
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		require.Truef(t, ok, "expected expression to be HashLiteral, got %T", stmt.Expression)
+		require.Len(t, hash.Pairs, 3)
+
+		expected := map[string]func(ast.Expression){
+			"one": func(e ast.Expression) {
+				assertInfixExpression(t, e, 0, "+", 1)
+			},
+			"two": func(e ast.Expression) {
+				assertInfixExpression(t, e, 10, "-", 8)
+			},
+			"three": func(e ast.Expression) {
+				assertInfixExpression(t, e, 15, "/", 5)
+			},
+		}
+
+		for key, value := range hash.Pairs {
+			literal, ok := key.(*ast.StringLiteral)
+			require.Truef(t, ok, "key is not a string literal, got %T", key)
+			testFunc := expected[literal.String()]
+			testFunc(value)
+		}
+	})
+
+	t.Run("with an empty hash", func(t *testing.T) {
+		input := `{}`
+		program := setupProgram(t, input, 0)
+		stmt := assertExpressionStatement(t, program.Statements[0])
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		require.Truef(t, ok, "expected expression to be HashLiteral, got %T", stmt.Expression)
+		assert.Len(t, hash.Pairs, 0)
+	})
+}
+
 func TestIndexExpressionParsing(t *testing.T) {
 	input := "myArray[1 + 1]"
 	program := setupProgram(t, input, 0)
