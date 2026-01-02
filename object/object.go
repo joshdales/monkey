@@ -19,3 +19,7 @@ type Object interface {
 	Type() ObjectType
 	Inspect() string
 }
+
+type Hashable interface {
+	HashKey() HashKey
+}
