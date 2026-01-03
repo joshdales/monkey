@@ -13,6 +13,7 @@ const (
 	BUILTIN_OBJ      ObjectType = "BUILTIN"
 	ARRAY_OBJ        ObjectType = "ARRAY"
 	HASH_OBJ         ObjectType = "HASH"
+	QUOTE_OBJ        ObjectType = "QUOTE"
 )
 
 type Object interface {
