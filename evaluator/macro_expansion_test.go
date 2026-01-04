@@ -1,6 +1,7 @@
 package evaluator_test
 
 import (
+	"monkey/evaluator"
 	"monkey/object"
 	"monkey/testutil"
 	"testing"
@@ -16,9 +17,9 @@ func TestDefineMacros(t *testing.T) {
 	let mymacro = macro(x, y) {x + y};
 	`
 	env := object.NewEnvironment()
-	program := testutil.SetupProgram(t, input, 3)
+	program := testutil.SetupProgram(t, input, 2)
 
-	DefineMacros(env, program)
+	evaluator.DefineMacros(env, program)
 
 	_, ok := env.Get("number")
 	assert.Falsef(t, ok, "number should not be defined")
