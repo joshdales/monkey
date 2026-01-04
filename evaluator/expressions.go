@@ -149,10 +149,15 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 }
 
 func evalCallExpression(env *object.Environment, exp *ast.CallExpression) object.Object {
+	if exp.Function.TokenLiteral() == "quote" {
+		return quote(exp.Arguments[0])
+	}
+
 	function := Eval(env, exp.Function)
 	if isError(function) {
 		return function
 	}
+
 	args := evalExpressions(env, exp.Arguments)
 	if len(args) == 1 && isError(args[0]) {
 		return args[0]
