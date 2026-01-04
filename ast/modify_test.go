@@ -57,6 +57,34 @@ func TestModify(t *testing.T) {
 			&ast.IndexExpression{Left: one(), Index: one()},
 			&ast.IndexExpression{Left: two(), Index: two()},
 		},
+		{
+			&ast.IfExpression{
+				Condition: one(),
+				Consequence: &ast.BlockStatement{
+					Statements: []ast.Statement{&ast.ExpressionStatement{Expression: one()}},
+				},
+				Alternative: &ast.BlockStatement{
+					Statements: []ast.Statement{&ast.ExpressionStatement{Expression: one()}},
+				},
+			},
+			&ast.IfExpression{
+				Condition: one(),
+				Consequence: &ast.BlockStatement{
+					Statements: []ast.Statement{&ast.ExpressionStatement{Expression: two()}},
+				},
+				Alternative: &ast.BlockStatement{
+					Statements: []ast.Statement{&ast.ExpressionStatement{Expression: two()}},
+				},
+			},
+		},
+		{
+			&ast.ReturnStatement{ReturnValue: one()},
+			&ast.ReturnStatement{ReturnValue: two()},
+		},
+		{
+			&ast.LetStatement{Value: one()},
+			&ast.LetStatement{Value: two()},
+		},
 	}
 
 	for _, tC := range testCases {
