@@ -2,9 +2,8 @@ package evaluator_test
 
 import (
 	"monkey/evaluator"
-	"monkey/lexer"
 	"monkey/object"
-	"monkey/parser"
+	"monkey/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,8 +32,8 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
-		assertIntegerObject(t, tt.expected, evaluated)
+		evaluated := testutil.TestEval(t, tt.input)
+		testutil.AssertIntegerObject(t, tt.expected, evaluated)
 	}
 }
 
@@ -42,7 +41,7 @@ func TestStringLiteral(t *testing.T) {
 
 	t.Run("Eval", func(t *testing.T) {
 		input := `"Hello World!"`
-		evaluated := testEval(t, input)
+		evaluated := testutil.TestEval(t, input)
 		str, ok := evaluated.(*object.String)
 		require.Truef(t, ok, "object is not string, got %T (%+v)", evaluated, evaluated)
 		assert.Equal(t, "Hello World!", str.Value)
@@ -50,7 +49,7 @@ func TestStringLiteral(t *testing.T) {
 
 	t.Run("String concatenation", func(t *testing.T) {
 		input := `"Hello" + " " + "World!"`
-		evaluated := testEval(t, input)
+		evaluated := testutil.TestEval(t, input)
 		str, ok := evaluated.(*object.String)
 		require.Truef(t, ok, "object is not string, got %T (%+v)", evaluated, evaluated)
 		assert.Equal(t, "Hello World!", str.Value)
@@ -59,12 +58,12 @@ func TestStringLiteral(t *testing.T) {
 
 func TestArrayLiterals(t *testing.T) {
 	input := `[1, 2 * 2, 3 + 3]`
-	evaluated := testEval(t, input)
+	evaluated := testutil.TestEval(t, input)
 	array, ok := evaluated.(*object.Array)
 	require.Truef(t, ok, "object is not Array, got %T (%+v)", evaluated, evaluated)
-	assertIntegerObject(t, 1, array.Elements[0])
-	assertIntegerObject(t, 4, array.Elements[1])
-	assertIntegerObject(t, 6, array.Elements[2])
+	testutil.AssertIntegerObject(t, 1, array.Elements[0])
+	testutil.AssertIntegerObject(t, 4, array.Elements[1])
+	testutil.AssertIntegerObject(t, 6, array.Elements[2])
 }
 
 func TestArrayIndexExpressions(t *testing.T) {
@@ -85,12 +84,12 @@ func TestArrayIndexExpressions(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
+		evaluated := testutil.TestEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			assertIntegerObject(t, int64(integer), evaluated)
+			testutil.AssertIntegerObject(t, int64(integer), evaluated)
 		} else {
-			assertNullObject(t, evaluated)
+			testutil.AssertNullObject(t, evaluated)
 		}
 	}
 }
@@ -122,8 +121,8 @@ func TestEvalBooleanExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
-		assertBooleanObject(t, tt.expected, evaluated)
+		evaluated := testutil.TestEval(t, tt.input)
+		testutil.AssertBooleanObject(t, tt.expected, evaluated)
 	}
 }
 
@@ -141,8 +140,8 @@ func TestBangOperator(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
-		assertBooleanObject(t, tt.expected, evaluated)
+		evaluated := testutil.TestEval(t, tt.input)
+		testutil.AssertBooleanObject(t, tt.expected, evaluated)
 	}
 }
 
@@ -161,12 +160,12 @@ func TestIfElseExpressions(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
+		evaluated := testutil.TestEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			assertIntegerObject(t, int64(integer), evaluated)
+			testutil.AssertIntegerObject(t, int64(integer), evaluated)
 		} else {
-			assertNullObject(t, evaluated)
+			testutil.AssertNullObject(t, evaluated)
 		}
 	}
 }
@@ -193,8 +192,8 @@ func TestReturnStatement(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		evaluated := testEval(t, tt.input)
-		assertIntegerObject(t, tt.expected, evaluated)
+		evaluated := testutil.TestEval(t, tt.input)
+		testutil.AssertIntegerObject(t, tt.expected, evaluated)
 	}
 }
 
@@ -223,7 +222,7 @@ func TestErrorHandling(t *testing.T) {
 		{`{"name": "Monkey"}[fn(x) { x }]`, "unusable as hash key: FUNCTION"},
 	}
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
+		evaluated := testutil.TestEval(t, tt.input)
 		errObj, ok := evaluated.(*object.Error)
 		require.Truef(t, ok, "no error object returned, got %T (%+v)", evaluated, evaluated)
 		assert.Equal(t, tt.expectedMessage, errObj.Message)
@@ -242,7 +241,7 @@ func TestLetStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assertIntegerObject(t, tt.expected, testEval(t, tt.input))
+		testutil.AssertIntegerObject(t, tt.expected, testutil.TestEval(t, tt.input))
 	}
 }
 
@@ -250,7 +249,7 @@ func TestFunctions(t *testing.T) {
 	t.Run("function object", func(t *testing.T) {
 
 		input := "fn(x) { x + 2; };"
-		evaluated := testEval(t, input)
+		evaluated := testutil.TestEval(t, input)
 		fn, ok := evaluated.(*object.Function)
 		require.Truef(t, ok, "object is not a Function, got %T ((%+v))", evaluated, evaluated)
 		assert.Len(t, fn.Parameters, 1, "function has wrong number of parameters")
@@ -272,7 +271,7 @@ func TestFunctions(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			assertIntegerObject(t, tt.expected, testEval(t, tt.input))
+			testutil.AssertIntegerObject(t, tt.expected, testutil.TestEval(t, tt.input))
 		}
 	})
 
@@ -285,7 +284,7 @@ func TestFunctions(t *testing.T) {
 		let addTwo = newAdder(2);
 		addTwo(2);`
 
-		assertIntegerObject(t, 4, testEval(t, input))
+		testutil.AssertIntegerObject(t, 4, testutil.TestEval(t, input))
 	})
 }
 
@@ -303,10 +302,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			evaluated := testEval(t, tt.input)
+			evaluated := testutil.TestEval(t, tt.input)
 			switch expected := tt.expected.(type) {
 			case int:
-				assertIntegerObject(t, int64(expected), evaluated)
+				testutil.AssertIntegerObject(t, int64(expected), evaluated)
 			case string:
 				errObj, ok := evaluated.(*object.Error)
 				require.Truef(t, ok, "object is not an Error, got %T (%+v)", evaluated, evaluated)
@@ -326,7 +325,7 @@ func TestHashLiterals(t *testing.T) {
 		true: 5,
 		false: 6,
 	}`
-	evaluated := testEval(t, input)
+	evaluated := testutil.TestEval(t, input)
 	result, ok := evaluated.(*object.Hash)
 	require.Truef(t, ok, "Eval didn't return a Hash, got %T (%+v)", evaluated, evaluated)
 
@@ -342,7 +341,7 @@ func TestHashLiterals(t *testing.T) {
 	for expectedKey, expectedValue := range expected {
 		pair, ok := result.Pairs[expectedKey]
 		assert.Truef(t, ok, "No pair for given key in Pairs")
-		assertIntegerObject(t, expectedValue, pair.Value)
+		testutil.AssertIntegerObject(t, expectedValue, pair.Value)
 	}
 }
 
@@ -361,47 +360,12 @@ func TestHashIndexExpressions(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
+		evaluated := testutil.TestEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			assertIntegerObject(t, int64(integer), evaluated)
+			testutil.AssertIntegerObject(t, int64(integer), evaluated)
 		} else {
-			assertNullObject(t, evaluated)
+			testutil.AssertNullObject(t, evaluated)
 		}
 	}
-}
-
-// Test helpers
-
-func testEval(t *testing.T, input string) object.Object {
-	t.Helper()
-
-	l := lexer.New(input)
-	p := parser.New(l)
-	env := object.NewEnvironment()
-	program := p.ParseProgram()
-
-	return evaluator.Eval(env, program)
-}
-
-func assertIntegerObject(t *testing.T, expected int64, obj object.Object) {
-	t.Helper()
-
-	result, ok := obj.(*object.Integer)
-	require.Truef(t, ok, "object is not an Integer, got %T (%+v)", obj, obj)
-	assert.Equal(t, expected, result.Value)
-}
-
-func assertBooleanObject(t *testing.T, expected bool, obj object.Object) {
-	t.Helper()
-
-	result, ok := obj.(*object.Boolean)
-	require.Truef(t, ok, "object is not an Boolean, got %T (%+v)", obj, obj)
-	assert.Equal(t, expected, result.Value)
-}
-
-func assertNullObject(t *testing.T, obj object.Object) {
-	t.Helper()
-
-	assert.Equalf(t, evaluator.NULL, obj, "object is not NULL, got %T (%+v)", obj, obj)
 }

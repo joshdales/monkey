@@ -2,6 +2,7 @@ package evaluator_test
 
 import (
 	"monkey/object"
+	"monkey/testutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestQuote(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(t, tt.input)
+		evaluated := testutil.TestEval(t, tt.input)
 		quote, ok := evaluated.(*object.Quote)
 		require.Truef(t, ok, "expected *object.Quote, got %T (%+v)", evaluated, evaluated)
 		require.NotNil(t, quote.Node)
