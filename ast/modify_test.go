@@ -85,6 +85,28 @@ func TestModify(t *testing.T) {
 			&ast.LetStatement{Value: one()},
 			&ast.LetStatement{Value: two()},
 		},
+		{
+			&ast.FunctionLiteral{
+				Parameters: []*ast.Identifier{},
+				Body: &ast.BlockStatement{
+					Statements: []ast.Statement{
+						&ast.ExpressionStatement{Expression: one()},
+					},
+				},
+			},
+			&ast.FunctionLiteral{
+				Parameters: []*ast.Identifier{},
+				Body: &ast.BlockStatement{
+					Statements: []ast.Statement{
+						&ast.ExpressionStatement{Expression: two()},
+					},
+				},
+			},
+		},
+		{
+			&ast.ArrayLiteral{Elements: []ast.Expression{one(), two()}},
+			&ast.ArrayLiteral{Elements: []ast.Expression{two(), two()}},
+		},
 	}
 
 	for _, tC := range testCases {
