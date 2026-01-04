@@ -126,4 +126,21 @@ func TestModify(t *testing.T) {
 			assert.ObjectsAreEqualValues(tC.expected, modified)
 		})
 	}
+
+	t.Run("HashLiteral", func(t *testing.T) {
+		hashLiteral := &ast.HashLiteral{
+			Pairs: map[ast.Expression]ast.Expression{
+				one(): one(),
+				one(): one(),
+			},
+		}
+
+		ast.Modify(hashLiteral, turnOneIntoTwo)
+		for key, val := range hashLiteral.Pairs {
+			key, _ := key.(*ast.IntegerLiteral)
+			assert.EqualValues(t, 2, key.Value)
+			val, _ := val.(*ast.IntegerLiteral)
+			assert.EqualValues(t, 2, val.Value)
+		}
+	})
 }
