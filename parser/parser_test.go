@@ -385,6 +385,20 @@ func TestIndexExpressionParsing(t *testing.T) {
 	assertInfixExpression(t, idxExp.Index, 1, "+", 1)
 }
 
+func TestMacroLiteralParsing(t *testing.T) {
+	input := `macro(x, y) { x + y }`
+	program := setupProgram(t, input, 1)
+	stmt := assertExpressionStatement(t, program.Statements[0])
+	macro, ok := stmt.Expression.(*ast.MacroLiteral)
+	require.Truef(t, ok, "statement is not ast.MacroLiteral, got %T", stmt.Expression)
+	assert.Len(t, macro.Parameters, 2)
+	assertLiteralExpression(t, "x", macro.Parameters[0])
+	assertLiteralExpression(t, "y", macro.Parameters[1])
+	assert.Len(t, macro.Body.Statements, 1)
+	bodyStmt := assertExpressionStatement(t, macro.Body.Statements[0])
+	assertInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+}
+
 // Test Helpers
 
 func setupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
