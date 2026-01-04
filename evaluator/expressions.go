@@ -150,7 +150,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 func evalCallExpression(env *object.Environment, exp *ast.CallExpression) object.Object {
 	if exp.Function.TokenLiteral() == "quote" {
-		return quote(exp.Arguments[0])
+		return quote(env, exp.Arguments[0])
 	}
 
 	function := Eval(env, exp.Function)
