@@ -34,3 +34,29 @@ func TestDefineMacros(t *testing.T) {
 	assert.Equal(t, "y", macro.Parameters[1].String())
 	assert.Equal(t, "(x + y)", macro.Body.String())
 }
+func TestExpandMacros(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`let infixExpression = macro() { quote(1 + 2); };
+			infixExpression()`,
+			`(1 + 2)`,
+		},
+		{
+			`let reverse = macro(a, b) { quote(unquote(b) - unquote(a)); };
+			reverse(2 + 2, 10 - 5);`,
+			`(10 - 5) - (2 + 2)`,
+		},
+	}
+
+	for _, tC := range testCases {
+		expected := testutil.SetupProgram(t, tC.expected, 0)
+		program := testutil.SetupProgram(t, tC.input, 0)
+		env := object.NewEnvironment()
+		evaluator.DefineMacros(env, program)
+		expanded := evaluator.ExpandMacros(env, program)
+		assert.EqualValues(t, expected.String(), expanded.String())
+	}
+}

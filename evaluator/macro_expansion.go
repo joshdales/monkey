@@ -19,7 +19,7 @@ func DefineMacros(env *object.Environment, program *ast.Program) {
 		definitionIndex := definitions[i]
 		program.Statements = append(
 			program.Statements[:definitionIndex],
-			program.Statements[:definitionIndex+1]...,
+			program.Statements[definitionIndex+1:]...,
 		)
 	}
 }
@@ -45,4 +45,68 @@ func addMacro(env *object.Environment, stmt ast.Statement) {
 	}
 
 	env.Set(letStatement.Name.Value, macro)
+}
+
+func ExpandMacros(env *object.Environment, program ast.Node) ast.Node {
+	return ast.Modify(program, func(node ast.Node) ast.Node {
+		callExpression, ok := node.(*ast.CallExpression)
+		if !ok {
+			return node
+		}
+
+		macro, ok := isMacroCall(env, callExpression)
+		if !ok {
+			return node
+		}
+
+		args := quoteArgs(callExpression)
+		evalEnv := extendMacroEnv(macro, args)
+
+		evaluated := Eval(evalEnv, macro.Body)
+		quote, ok := evaluated.(*object.Quote)
+		if !ok {
+			panic("we only support returning AST-nodes from macros")
+		}
+
+		return quote.Node
+	})
+}
+
+func isMacroCall(env *object.Environment, exp *ast.CallExpression) (*object.Macro, bool) {
+	identifier, ok := exp.Function.(*ast.Identifier)
+	if !ok {
+		return nil, false
+	}
+
+	obj, ok := env.Get(identifier.Value)
+	if !ok {
+		return nil, ok
+	}
+
+	macro, ok := obj.(*object.Macro)
+	if !ok {
+		return nil, false
+	}
+
+	return macro, true
+}
+
+func quoteArgs(exp *ast.CallExpression) []*object.Quote {
+	args := make([]*object.Quote, 0, len(exp.Arguments))
+
+	for _, arg := range exp.Arguments {
+		args = append(args, &object.Quote{Node: arg})
+	}
+
+	return args
+}
+
+func extendMacroEnv(marco *object.Macro, args []*object.Quote) *object.Environment {
+	extended := object.NewEnclosingEnvironment(marco.Env)
+
+	for paramIdx, param := range marco.Parameters {
+		extended.Set(param.Value, args[paramIdx])
+	}
+
+	return extended
 }
