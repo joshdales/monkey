@@ -19,7 +19,7 @@ func (m *Macro) Type() ObjectType {
 func (m *Macro) Inspect() string {
 	var out bytes.Buffer
 
-	params := make([]string, len(m.Parameters))
+	params := make([]string, 0, len(m.Parameters))
 	for _, param := range m.Parameters {
 		params = append(params, param.String())
 	}

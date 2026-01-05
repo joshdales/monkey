@@ -23,13 +23,13 @@ func (ml *MacroLiteral) TokenLiteral() string {
 func (ml *MacroLiteral) String() string {
 	var out bytes.Buffer
 
-	params := make([]string, len(ml.Parameters))
+	params := make([]string, 0, len(ml.Parameters))
 	for _, param := range ml.Parameters {
 		params = append(params, param.String())
 	}
 
 	out.WriteString(ml.TokenLiteral())
-	out.WriteString(")")
+	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(")")
 	out.WriteString(ml.Body.String())

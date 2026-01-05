@@ -21,7 +21,7 @@ func (hl *HashLiteral) TokenLiteral() string {
 func (hl *HashLiteral) String() string {
 	var out bytes.Buffer
 
-	pairs := make([]string, len(hl.Pairs))
+	pairs := make([]string, 0, len(hl.Pairs))
 	for key, value := range hl.Pairs {
 		pairs = append(pairs, fmt.Sprintf("%s: %s", key.String(), value.String()))
 	}
