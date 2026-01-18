@@ -20,8 +20,8 @@ func SetupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
 
 	program := p.ParseProgram()
 	require.NotNil(t, program, "program.ParseProgram() returned nil")
-	checkParserErrors(t, p)
 	if stmtLen > 0 {
+		checkParserErrors(t, p)
 		require.Len(t, program.Statements, stmtLen, "program.Statements does not contain %d statements.", stmtLen)
 	}
 	return program
@@ -44,10 +44,8 @@ func checkParserErrors(t *testing.T, p *parser.Parser) {
 func TestEval(t *testing.T, input string) object.Object {
 	t.Helper()
 
-	l := lexer.New(input)
-	p := parser.New(l)
 	env := object.NewEnvironment()
-	program := p.ParseProgram()
+	program := SetupProgram(t, input, 0)
 
 	return evaluator.Eval(env, program)
 }
