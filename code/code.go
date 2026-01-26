@@ -5,12 +5,6 @@ import (
 	"fmt"
 )
 
-type Instructions []byte
-
-func (ins Instructions) String() string {
-	return ""
-}
-
 type Opcode byte
 
 const (
