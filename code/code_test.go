@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMake(t *testing.T) {
@@ -39,5 +40,30 @@ func TestInstructionsString(t *testing.T) {
 		concatted = append(concatted, ins...)
 	}
 
-	assert.Equal(t, expected, concatted.String(), "instructions wrongly formatted")
+	assert.Equalf(t,
+		expected,
+		concatted.String(),
+		"instructions wrongly formatted.\nwant %q\ngot %q", expected, concatted.String(),
+	)
+}
+
+func TestReadOperands(t *testing.T) {
+	tests := []struct {
+		op        code.Opcode
+		operands  []int
+		bytesRead int
+	}{
+		{code.OpConstant, []int{65535}, 2},
+	}
+
+	for _, tt := range tests {
+		instruction := code.Make(tt.op, tt.operands...)
+		def, err := code.Lookup(byte(tt.op))
+		require.NoErrorf(t, err, "definition not found: %q", err)
+		operandsRead, n := code.ReadOperands(def, instruction[1:])
+		assert.Equal(t, tt.bytesRead, n)
+		for i, want := range tt.operands {
+			assert.Equal(t, want, operandsRead[i])
+		}
+	}
 }
