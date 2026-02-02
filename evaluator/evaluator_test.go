@@ -33,7 +33,7 @@ func TestEvalIntegerExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		evaluated := testutil.TestEval(t, tt.input)
-		testutil.AssertIntegerObject(t, tt.expected, evaluated)
+		testutil.AssertIntegerObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -61,9 +61,9 @@ func TestArrayLiterals(t *testing.T) {
 	evaluated := testutil.TestEval(t, input)
 	array, ok := evaluated.(*object.Array)
 	require.Truef(t, ok, "object is not Array, got %T (%+v)", evaluated, evaluated)
-	testutil.AssertIntegerObject(t, 1, array.Elements[0])
-	testutil.AssertIntegerObject(t, 4, array.Elements[1])
-	testutil.AssertIntegerObject(t, 6, array.Elements[2])
+	testutil.AssertIntegerObject(t, array.Elements[0], 1)
+	testutil.AssertIntegerObject(t, array.Elements[1], 4)
+	testutil.AssertIntegerObject(t, array.Elements[2], 6)
 }
 
 func TestArrayIndexExpressions(t *testing.T) {
@@ -87,7 +87,7 @@ func TestArrayIndexExpressions(t *testing.T) {
 		evaluated := testutil.TestEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testutil.AssertIntegerObject(t, int64(integer), evaluated)
+			testutil.AssertIntegerObject(t, evaluated, int64(integer))
 		} else {
 			testutil.AssertNullObject(t, evaluated)
 		}
@@ -122,7 +122,7 @@ func TestEvalBooleanExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		evaluated := testutil.TestEval(t, tt.input)
-		testutil.AssertBooleanObject(t, tt.expected, evaluated)
+		testutil.AssertBooleanObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -141,7 +141,7 @@ func TestBangOperator(t *testing.T) {
 
 	for _, tt := range tests {
 		evaluated := testutil.TestEval(t, tt.input)
-		testutil.AssertBooleanObject(t, tt.expected, evaluated)
+		testutil.AssertBooleanObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -163,7 +163,7 @@ func TestIfElseExpressions(t *testing.T) {
 		evaluated := testutil.TestEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testutil.AssertIntegerObject(t, int64(integer), evaluated)
+			testutil.AssertIntegerObject(t, evaluated, int64(integer))
 		} else {
 			testutil.AssertNullObject(t, evaluated)
 		}
@@ -193,7 +193,7 @@ func TestReturnStatement(t *testing.T) {
 
 	for _, tt := range testCases {
 		evaluated := testutil.TestEval(t, tt.input)
-		testutil.AssertIntegerObject(t, tt.expected, evaluated)
+		testutil.AssertIntegerObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -241,7 +241,7 @@ func TestLetStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testutil.AssertIntegerObject(t, tt.expected, testutil.TestEval(t, tt.input))
+		testutil.AssertIntegerObject(t, testutil.TestEval(t, tt.input), tt.expected)
 	}
 }
 
@@ -271,7 +271,7 @@ func TestFunctions(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			testutil.AssertIntegerObject(t, tt.expected, testutil.TestEval(t, tt.input))
+			testutil.AssertIntegerObject(t, testutil.TestEval(t, tt.input), tt.expected)
 		}
 	})
 
@@ -284,7 +284,7 @@ func TestFunctions(t *testing.T) {
 		let addTwo = newAdder(2);
 		addTwo(2);`
 
-		testutil.AssertIntegerObject(t, 4, testutil.TestEval(t, input))
+		testutil.AssertIntegerObject(t, testutil.TestEval(t, input), 4)
 	})
 }
 
@@ -305,7 +305,7 @@ func TestBuiltinFunctions(t *testing.T) {
 			evaluated := testutil.TestEval(t, tt.input)
 			switch expected := tt.expected.(type) {
 			case int:
-				testutil.AssertIntegerObject(t, int64(expected), evaluated)
+				testutil.AssertIntegerObject(t, evaluated, int64(expected))
 			case string:
 				errObj, ok := evaluated.(*object.Error)
 				require.Truef(t, ok, "object is not an Error, got %T (%+v)", evaluated, evaluated)
@@ -341,7 +341,7 @@ func TestHashLiterals(t *testing.T) {
 	for expectedKey, expectedValue := range expected {
 		pair, ok := result.Pairs[expectedKey]
 		assert.Truef(t, ok, "No pair for given key in Pairs")
-		testutil.AssertIntegerObject(t, expectedValue, pair.Value)
+		testutil.AssertIntegerObject(t, pair.Value, expectedValue)
 	}
 }
 
@@ -363,7 +363,7 @@ func TestHashIndexExpressions(t *testing.T) {
 		evaluated := testutil.TestEval(t, tt.input)
 		integer, ok := tt.expected.(int)
 		if ok {
-			testutil.AssertIntegerObject(t, int64(integer), evaluated)
+			testutil.AssertIntegerObject(t, evaluated, int64(integer))
 		} else {
 			testutil.AssertNullObject(t, evaluated)
 		}

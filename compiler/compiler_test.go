@@ -41,8 +41,8 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 
 		bytecode := compiler.Bytecode()
 
-		testutil.AssertInstructions(t, tt.expectedInstructions, bytecode.Instructions)
-		testutil.AssertConstants(t, tt.expectedConstants, bytecode.Constants)
+		testutil.AssertInstructions(t, bytecode.Instructions, tt.expectedInstructions)
+		testutil.AssertConstants(t, bytecode.Constants, tt.expectedConstants)
 
 	}
 }

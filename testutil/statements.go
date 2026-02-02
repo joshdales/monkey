@@ -15,11 +15,11 @@ func AssertExpressionStatement(t *testing.T, stmt ast.Statement) *ast.Expression
 	return exp
 }
 
-func AssertLetStatement(t *testing.T, name string, stmt ast.Statement) {
+func AssertLetStatement(t *testing.T, stmt ast.Statement, expectedName string) {
 	t.Helper()
 	assert.Equal(t, "let", stmt.TokenLiteral(), "TokenLiteral not 'let'")
 	letStmt, ok := stmt.(*ast.LetStatement)
 	require.Truef(t, ok, "expected statement to be LetStatement, got %T", stmt)
-	assert.Equal(t, name, letStmt.Name.Value)
-	assert.Equal(t, name, letStmt.Name.TokenLiteral())
+	assert.Equal(t, expectedName, letStmt.Name.Value)
+	assert.Equal(t, expectedName, letStmt.Name.TokenLiteral())
 }

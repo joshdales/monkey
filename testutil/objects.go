@@ -9,19 +9,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func AssertIntegerObject(t *testing.T, expected int64, obj object.Object) {
+func AssertIntegerObject(t *testing.T, actual object.Object, expected int64) {
 	t.Helper()
 
-	result, ok := obj.(*object.Integer)
-	require.Truef(t, ok, "object is not an Integer, got %T (%+v)", obj, obj)
+	result, ok := actual.(*object.Integer)
+	require.Truef(t, ok, "object is not an Integer, got %T (%+v)", actual, actual)
 	assert.Equal(t, expected, result.Value)
 }
 
-func AssertBooleanObject(t *testing.T, expected bool, obj object.Object) {
+func AssertBooleanObject(t *testing.T, actual object.Object, expected bool) {
 	t.Helper()
 
-	result, ok := obj.(*object.Boolean)
-	require.Truef(t, ok, "object is not an Boolean, got %T (%+v)", obj, obj)
+	result, ok := actual.(*object.Boolean)
+	require.Truef(t, ok, "object is not an Boolean, got %T (%+v)", actual, actual)
 	assert.Equal(t, expected, result.Value)
 }
 

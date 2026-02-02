@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func AssertInstructions(t *testing.T, expected []code.Instructions, actual code.Instructions) {
+func AssertInstructions(t *testing.T, actual code.Instructions, expected []code.Instructions) {
 	t.Helper()
 	concatted := concatInstructions(expected)
 
@@ -29,14 +29,14 @@ func concatInstructions(instructions []code.Instructions) code.Instructions {
 	return out
 }
 
-func AssertConstants(t *testing.T, expected []any, actual []object.Object) {
+func AssertConstants(t *testing.T, actual []object.Object, expected []any) {
 	t.Helper()
 	require.Len(t, actual, len(expected))
 
 	for i, constant := range expected {
 		switch constant := constant.(type) {
 		case int:
-			AssertIntegerObject(t, int64(constant), actual[i])
+			AssertIntegerObject(t, actual[i], int64(constant))
 		}
 	}
 }
