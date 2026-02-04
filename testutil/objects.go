@@ -9,6 +9,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func AssertObject(t *testing.T, actual object.Object, expected any) {
+	t.Helper()
+
+	switch value := expected.(type) {
+	case int:
+		AssertIntegerObject(t, actual, int64(value))
+	case int64:
+		AssertIntegerObject(t, actual, value)
+	case bool:
+		AssertBooleanObject(t, actual, value)
+	case nil:
+		AssertNullObject(t, actual)
+	}
+}
+
 func AssertIntegerObject(t *testing.T, actual object.Object, expected int64) {
 	t.Helper()
 

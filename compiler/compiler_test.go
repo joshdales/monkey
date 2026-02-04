@@ -2,11 +2,8 @@ package compiler_test
 
 import (
 	"monkey/code"
-	"monkey/compiler"
 	"monkey/testutil"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 type compilerTestCase struct {
@@ -33,16 +30,10 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {
-
-		program := testutil.SetupProgram(t, tt.input, 0)
-		compiler := compiler.New()
-		err := compiler.Compile(program)
-		require.NoError(t, err)
-
-		bytecode := compiler.Bytecode()
+		comp := testutil.Compile(t, tt.input)
+		bytecode := comp.Bytecode()
 
 		testutil.AssertInstructions(t, bytecode.Instructions, tt.expectedInstructions)
 		testutil.AssertConstants(t, bytecode.Constants, tt.expectedConstants)
-
 	}
 }

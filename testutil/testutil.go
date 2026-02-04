@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"monkey/ast"
+	"monkey/compiler"
 	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/object"
@@ -23,6 +24,15 @@ func SetupProgram(t *testing.T, input string, stmtLen int) *ast.Program {
 		require.Len(t, program.Statements, stmtLen, "program.Statements does not contain %d statements.", stmtLen)
 	}
 	return program
+}
+
+func Compile(t *testing.T, input string) *compiler.Compiler {
+	t.Helper()
+	program := SetupProgram(t, input, 0)
+	comp := compiler.New()
+	err := comp.Compile(program)
+	require.NoError(t, err)
+	return comp
 }
 
 func checkParserErrors(t *testing.T, p *parser.Parser) {
