@@ -4,21 +4,19 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"monkey/evaluator"
+	"monkey/compiler"
 	"monkey/lexer"
-	"monkey/object"
 	"monkey/parser"
+	"monkey/vm"
 )
 
-const prompt = ">> "
+const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	env := object.NewEnvironment()
-	macroEnv := object.NewEnvironment()
 
 	for {
-		fmt.Fprint(out, prompt)
+		fmt.Fprint(out, PROMPT)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
@@ -33,13 +31,30 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluator.DefineMacros(macroEnv, program)
-		expanded := evaluator.ExpandMacros(macroEnv, program)
-		evaluated := evaluator.Eval(env, expanded)
-		if evaluated != nil {
-			io.WriteString(out, evaluated.Inspect())
-			io.WriteString(out, "\n")
+		comp := compiler.New()
+		err := comp.Compile(program)
+		if err != nil {
+			fmt.Fprintf(out, "Uh oh! Compilation failed:\n%s\n", err)
+			continue
 		}
+
+		machine := vm.New(comp.Bytecode())
+		err = machine.Run()
+		if err != nil {
+			fmt.Fprintf(out, "Uh oh! Executing bytecode failed:\n%s\n", err)
+		}
+
+		stackTop := machine.StackTop()
+		io.WriteString(out, stackTop.Inspect())
+		io.WriteString(out, "\n")
+
+		// evaluator.DefineMacros(macroEnv, program)
+		// expanded := evaluator.ExpandMacros(macroEnv, program)
+		// evaluated := evaluator.Eval(env, expanded)
+		// if evaluated != nil {
+		// 	io.WriteString(out, evaluated.Inspect())
+		// 	io.WriteString(out, "\n")
+		// }
 	}
 }
 
