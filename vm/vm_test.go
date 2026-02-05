@@ -2,10 +2,21 @@ package vm_test
 
 import (
 	"monkey/testutil"
+	"monkey/vm"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestIntegerArithmetic(t *testing.T) {
+	tests := []vmTestCase{
+		{"1", 1},
+		{"2", 2},
+		{"1 + 2", 2},
+	}
+
+	runVmTest(t, tests)
+}
 
 type vmTestCase struct {
 	input    string
@@ -17,10 +28,10 @@ func runVmTest(t *testing.T, tests []vmTestCase) {
 
 	for _, tt := range tests {
 		comp := testutil.Compile(t, tt.input)
-		vm := New(comp.Bytecode())
+		vm := vm.New(comp.Bytecode())
 		err := vm.Run()
 		require.NoError(t, err)
-		stackElm := vm.StackTop
+		stackElm := vm.StackTop()
 
 		testutil.AssertObject(t, stackElm, tt.expected)
 	}
