@@ -31,7 +31,7 @@ func runVmTest(t *testing.T, tests []vmTestCase) {
 		vm := vm.New(comp.Bytecode())
 		err := vm.Run()
 		require.NoError(t, err)
-		stackElm := vm.StackTop()
+		stackElm := vm.LastPoppedStackElem()
 
 		testutil.AssertObject(t, stackElm, tt.expected)
 	}
