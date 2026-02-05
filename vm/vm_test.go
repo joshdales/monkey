@@ -27,6 +27,15 @@ func TestIntegerArithmetic(t *testing.T) {
 	runVmTest(t, tests)
 }
 
+func TestBooleanExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"true", true},
+		{"false", false},
+	}
+
+	runVmTest(t, tests)
+}
+
 type vmTestCase struct {
 	input    string
 	expected any
