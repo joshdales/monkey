@@ -15,6 +15,7 @@ func TestMake(t *testing.T) {
 		expected []byte
 	}{
 		{code.OpConstant, []int{65534}, []byte{byte(code.OpConstant), 255, 254}},
+		{code.OpAdd, []int{}, []byte{byte(code.OpAdd)}},
 	}
 
 	for _, tt := range tests {
