@@ -13,10 +13,10 @@ func AssertInstructions(t *testing.T, actual code.Instructions, expected []code.
 	t.Helper()
 	concatted := concatInstructions(expected)
 
-	require.Len(t, actual, len(concatted))
+	require.Len(t, actual, len(concatted), "wrong number of instructions")
 
 	for i, ins := range concatted {
-		assert.EqualValues(t, ins, actual[i])
+		assert.EqualValues(t, ins, actual[i], "wrong instruction")
 	}
 }
 
@@ -31,7 +31,7 @@ func concatInstructions(instructions []code.Instructions) code.Instructions {
 
 func AssertConstants(t *testing.T, actual []object.Object, expected []any) {
 	t.Helper()
-	require.Len(t, actual, len(expected))
+	require.Lenf(t, actual, len(expected), "wrong number of constants")
 
 	for i, constant := range expected {
 		switch constant := constant.(type) {
