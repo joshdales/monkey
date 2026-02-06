@@ -129,7 +129,7 @@ func TestBooleanExpressions(t *testing.T) {
 		},
 		{
 			input:             "true == false",
-			expectedConstants: []any{1, 2},
+			expectedConstants: []any{},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpTrue),
 				code.Make(code.OpFalse),
@@ -139,7 +139,7 @@ func TestBooleanExpressions(t *testing.T) {
 		},
 		{
 			input:             "true != false",
-			expectedConstants: []any{1, 2},
+			expectedConstants: []any{},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpTrue),
 				code.Make(code.OpFalse),
@@ -156,10 +156,12 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {
-		comp := testutil.Compile(t, tt.input)
-		bytecode := comp.Bytecode()
+		t.Run(tt.input, func(t *testing.T) {
+			comp := testutil.Compile(t, tt.input)
+			bytecode := comp.Bytecode()
 
-		testutil.AssertInstructions(t, bytecode.Instructions, tt.expectedInstructions)
-		testutil.AssertConstants(t, bytecode.Constants, tt.expectedConstants)
+			testutil.AssertInstructions(t, bytecode.Instructions, tt.expectedInstructions)
+			testutil.AssertConstants(t, bytecode.Constants, tt.expectedConstants)
+		})
 	}
 }

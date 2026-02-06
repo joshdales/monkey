@@ -31,6 +31,23 @@ func TestBooleanExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		{"true", true},
 		{"false", false},
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 < 1", false},
+		{"1 > 1", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 == 2", false},
+		{"1 != 2", true},
+		{"true == true", true},
+		{"false == false", true},
+		{"true == false", false},
+		{"true != false", true},
+		{"false != true", true},
+		{"(1 < 2) == true", true},
+		{"(1 < 2) == false", false},
+		{"(1 > 2) == true", false},
+		{"(1 > 2) == false", true},
 	}
 
 	runVmTest(t, tests)
@@ -45,12 +62,14 @@ func runVmTest(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {
-		comp := testutil.Compile(t, tt.input)
-		vm := vm.New(comp.Bytecode())
-		err := vm.Run()
-		require.NoError(t, err)
-		stackElm := vm.LastPoppedStackElem()
+		t.Run(tt.input, func(t *testing.T) {
+			comp := testutil.Compile(t, tt.input)
+			vm := vm.New(comp.Bytecode())
+			err := vm.Run()
+			require.NoError(t, err)
+			stackElm := vm.LastPoppedStackElem()
 
-		testutil.AssertObject(t, stackElm, tt.expected)
+			testutil.AssertObject(t, stackElm, tt.expected)
+		})
 	}
 }
