@@ -19,7 +19,7 @@ func AssertObject(t *testing.T, actual object.Object, expected any) {
 		AssertIntegerObject(t, actual, value)
 	case bool:
 		AssertBooleanObject(t, actual, value)
-	case nil:
+	case nil, *object.Null:
 		AssertNullObject(t, actual)
 	}
 }
