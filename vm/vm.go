@@ -157,7 +157,7 @@ func (vm *VM) push(obj object.Object) error {
 func (vm *VM) pop() object.Object {
 	o := vm.StackTop()
 	if o == nil {
-		return nil
+		return Null
 	}
 	vm.sp--
 	return o
