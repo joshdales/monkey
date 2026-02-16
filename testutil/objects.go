@@ -19,6 +19,8 @@ func AssertObject(t *testing.T, actual object.Object, expected any) {
 		AssertIntegerObject(t, actual, value)
 	case bool:
 		AssertBooleanObject(t, actual, value)
+	case string:
+		AssertStringObject(t, actual, value)
 	case nil, *object.Null:
 		AssertNullObject(t, actual)
 	}
@@ -44,4 +46,12 @@ func AssertNullObject(t *testing.T, obj object.Object) {
 	t.Helper()
 
 	assert.Equalf(t, evaluator.NULL, obj, "object is not NULL, got %T (%+v)", obj, obj)
+}
+
+func AssertStringObject(t *testing.T, actual object.Object, expected string) {
+	t.Helper()
+
+	result, ok := actual.(*object.String)
+	require.Truef(t, ok, "object is not a String, got %T (%+v)", actual)
+	assert.Equal(t, expected, result.Value)
 }

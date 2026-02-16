@@ -34,9 +34,6 @@ func AssertConstants(t *testing.T, actual []object.Object, expected []any) {
 	require.Lenf(t, actual, len(expected), "wrong number of constants")
 
 	for i, constant := range expected {
-		switch constant := constant.(type) {
-		case int:
-			AssertIntegerObject(t, actual[i], int64(constant))
-		}
+		AssertObject(t, actual[i], constant)
 	}
 }
