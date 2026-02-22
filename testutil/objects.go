@@ -15,6 +15,8 @@ func AssertObject(t *testing.T, actual object.Object, expected any) {
 	switch value := expected.(type) {
 	case int:
 		AssertIntegerObject(t, actual, int64(value))
+	case []int:
+		AssertIntegerArray(t, actual, value)
 	case int64:
 		AssertIntegerObject(t, actual, value)
 	case bool:
@@ -54,4 +56,16 @@ func AssertStringObject(t *testing.T, actual object.Object, expected string) {
 	result, ok := actual.(*object.String)
 	require.Truef(t, ok, "object is not a String, got %T (%+v)", actual)
 	assert.Equal(t, expected, result.Value)
+}
+
+func AssertIntegerArray(t *testing.T, actual object.Object, expected []int) {
+	t.Helper()
+
+	array, ok := actual.(*object.Array)
+	require.Truef(t, ok, "object us not an Array, got %T, (%+v)", actual, actual)
+	assert.Len(t, array.Elements, len(expected))
+	for i, expectedElem := range expected {
+		AssertIntegerObject(t, array.Elements[i], int64(expectedElem))
+	}
+
 }
