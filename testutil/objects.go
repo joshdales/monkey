@@ -17,6 +17,8 @@ func AssertObject(t *testing.T, actual object.Object, expected any) {
 		AssertIntegerObject(t, actual, int64(value))
 	case []int:
 		AssertIntegerArray(t, actual, value)
+	case map[object.HashKey]int64:
+		AssertIntegerHash(t, actual, value)
 	case int64:
 		AssertIntegerObject(t, actual, value)
 	case bool:
@@ -67,5 +69,16 @@ func AssertIntegerArray(t *testing.T, actual object.Object, expected []int) {
 	for i, expectedElem := range expected {
 		AssertIntegerObject(t, array.Elements[i], int64(expectedElem))
 	}
+}
 
+func AssertIntegerHash(t *testing.T, actual object.Object, expected map[object.HashKey]int64) {
+	t.Helper()
+	hash, ok := actual.(*object.Hash)
+	require.Truef(t, ok, "object is not a Hash, got %T (%+v)", actual, actual)
+	assert.Len(t, hash.Pairs, len(expected), "hash has wrong number of Pairs")
+	for expectedKey, expectedValue := range expected {
+		pair, ok := hash.Pairs[expectedKey]
+		require.Truef(t, ok, "no pair for gived key in Pairs %v", expectedKey)
+		AssertIntegerObject(t, pair.Value, expectedValue)
+	}
 }
