@@ -118,6 +118,23 @@ func TestHashLiterals(t *testing.T) {
 	runVmTest(t, tests)
 }
 
+func TestIndexExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"[1, 2, 3][1]", 2},
+		{"[1, 2, 3][0 + 2]", 3},
+		{"[[1, 1, 1]][0][0]", 1},
+		{"[][0]", vm.Null},
+		{"[1, 2, 3][99]", vm.Null},
+		{"[1][-1]", vm.Null},
+		{"{1: 1, 2: 2}[1]", 1},
+		{"{1: 1, 2: 2}[2]", 2},
+		{"{1: 1}[0]", vm.Null},
+		{"{}[0]", vm.Null},
+	}
+
+	runVmTest(t, tests)
+}
+
 func TestGlobalLetStatements(t *testing.T) {
 	tests := []vmTestCase{
 		{"let one = 1; one", 1},
