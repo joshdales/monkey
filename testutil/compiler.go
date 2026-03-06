@@ -34,6 +34,13 @@ func AssertConstants(t *testing.T, actual []object.Object, expected []any) {
 	require.Lenf(t, actual, len(expected), "wrong number of constants")
 
 	for i, constant := range expected {
-		AssertObject(t, actual[i], constant)
+		switch constant := constant.(type) {
+		case []code.Instructions:
+			fn, ok := actual[i].(*object.CompiledFunction)
+			require.Truef(t, ok, "constant %d - is not a function: %T", i, actual[i])
+			AssertInstructions(t, fn.Instructions, constant)
+		default:
+			AssertObject(t, actual[i], constant)
+		}
 	}
 }
