@@ -13,21 +13,36 @@ type EmittedInstruction struct {
 	Position int
 }
 
+type CompilationScope struct {
+	instructions        code.Instructions
+	lastInstruction     EmittedInstruction
+	previousInstruction EmittedInstruction
+}
+
 type Compiler struct {
 	instructions        code.Instructions
 	constants           []object.Object
 	lastInstruction     EmittedInstruction
 	previousInstruction EmittedInstruction
 	symbolTable         *SymbolTable
+	scopes              []CompilationScope
+	scopeIndex          int
 }
 
 func New() *Compiler {
+	mainScope := CompilationScope{
+		instructions:        code.Instructions{},
+		lastInstruction:     EmittedInstruction{},
+		previousInstruction: EmittedInstruction{},
+	}
 	return &Compiler{
 		instructions:        code.Instructions{},
 		constants:           []object.Object{},
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
 		symbolTable:         NewSymbolTable(),
+		scopes:              []CompilationScope{mainScope},
+		scopeIndex:          0,
 	}
 }
 
@@ -295,4 +310,12 @@ func (c *Compiler) changeOperand(opPos int, operand int) {
 	op := code.Opcode(c.instructions[opPos])
 	newInstruction := code.Make(op, operand)
 	c.replaceInstruction(opPos, newInstruction)
+}
+
+func (c *Compiler) enterScope() {
+	panic("TODO: enterScope")
+}
+
+func (c *Compiler) leaveScope() {
+	panic("TODO: leaveScope")
 }
