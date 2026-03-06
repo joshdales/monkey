@@ -21,14 +21,17 @@ const (
 	OpGreaterThan
 	OpMinus
 	OpBang
-	OpJumpNotTruthy
 	OpJump
+	OpJumpNotTruthy
 	OpNull
 	OpGetGlobal
 	OpSetGlobal
 	OpArray
 	OpHash
 	OpIndex
+	OpCall
+	OpReturn
+	OpReturnValue
 )
 
 type Definition struct {
@@ -50,14 +53,17 @@ var definitions = map[Opcode]*Definition{
 	OpGreaterThan:   {"OpGreaterThan", []int{}},
 	OpMinus:         {"OpMinus", []int{}},
 	OpBang:          {"OpBang", []int{}},
-	OpJumpNotTruthy: {"OpJumpNotTrruthy", []int{2}},
 	OpJump:          {"OpJump", []int{2}},
+	OpJumpNotTruthy: {"OpJumpNotTrruthy", []int{2}},
 	OpNull:          {"OpNull", []int{}},
 	OpGetGlobal:     {"OpGetGlobal", []int{2}},
 	OpSetGlobal:     {"OpSetGlobal", []int{2}},
 	OpArray:         {"OpArray", []int{2}},
 	OpHash:          {"OpHash", []int{2}},
 	OpIndex:         {"OpIndex", []int{}},
+	OpCall:          {"OpCall", []int{}},
+	OpReturn:        {"OpReturn", []int{}},
+	OpReturnValue:   {"OpReturnValue", []int{}},
 }
 
 func Lookup(op byte) (*Definition, error) {
