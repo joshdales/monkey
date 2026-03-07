@@ -145,6 +145,14 @@ func TestGlobalLetStatements(t *testing.T) {
 	runVmTest(t, tests)
 }
 
+func TestCallingFunctionsWithoutArguments(t *testing.T) {
+	tests := []vmTestCase{
+		{"let fivePlusTen = fn(){5+10;}; fivePlusTen();", 15},
+	}
+
+	runVmTest(t, tests)
+}
+
 type vmTestCase struct {
 	input    string
 	expected any
