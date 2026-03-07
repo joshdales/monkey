@@ -173,6 +173,14 @@ func TestFunctionsWithNoReturnValue(t *testing.T) {
 	runVmTest(t, tests)
 }
 
+func TestFirstClassFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{"let returnsOne = fn() { 1; }; let returnsOneReturner = fn() { returnsOne; }; returnsOneReturner()();", 1},
+	}
+
+	runVmTest(t, tests)
+}
+
 type vmTestCase struct {
 	input    string
 	expected any
