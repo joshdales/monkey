@@ -259,6 +259,13 @@ func (c *Compiler) Compile(node ast.Node) error {
 		instructions := c.leaveScope()
 		compiledFn := &object.CompiledFunction{Instructions: instructions}
 		c.emit(code.OpConstant, c.addConstant(compiledFn))
+
+	case *ast.ReturnStatement:
+		err := c.Compile(node.ReturnValue)
+		if err != nil {
+			return err
+		}
+		c.emit(code.OpReturnValue)
 	}
 
 	return nil
@@ -282,10 +289,10 @@ func (c *Compiler) addConstant(obj object.Object) int {
 }
 
 func (c *Compiler) addInstruction(ins []byte) int {
-	posNewInstruction := len(c.instructions)
-	updatedInstructions := append(c.instructions, ins...)
+	posNewInstruction := len(c.currentInstructions())
+	updatedInstructions := append(c.currentInstructions(), ins...)
 
-	c.scopes[c.scopeIndex].instructions = updatedInstructions
+	c.currentScope().instructions = updatedInstructions
 
 	return posNewInstruction
 }
@@ -298,26 +305,26 @@ func (c *Compiler) emit(op code.Opcode, operands ...int) int {
 }
 
 func (c *Compiler) setLastInstruction(op code.Opcode, pos int) {
-	previous := c.lastInstruction
+	previous := c.currentScope().lastInstruction
 	last := EmittedInstruction{Opcode: op, Position: pos}
 
-	c.scopes[c.scopeIndex].previousInstruction = previous
-	c.scopes[c.scopeIndex].lastInstruction = last
+	c.currentScope().previousInstruction = previous
+	c.currentScope().lastInstruction = last
 }
 
 func (c *Compiler) lastInstructionIsPop() bool {
-	return c.scopes[c.scopeIndex].lastInstruction.Opcode == code.OpPop
+	return c.currentScope().lastInstruction.Opcode == code.OpPop
 }
 
 func (c *Compiler) removeLastPop() {
-	last := c.scopes[c.scopeIndex].lastInstruction
-	previous := c.scopes[c.scopeIndex].previousInstruction
+	last := c.currentScope().lastInstruction
+	previous := c.currentScope().previousInstruction
 
 	old := c.currentInstructions()
 	new := old[:last.Position]
 
-	c.scopes[c.scopeIndex].instructions = new
-	c.scopes[c.scopeIndex].lastInstruction = previous
+	c.currentScope().instructions = new
+	c.currentScope().lastInstruction = previous
 }
 
 func (c *Compiler) replaceInstruction(pos int, newInstruction []byte) {
@@ -334,8 +341,12 @@ func (c *Compiler) changeOperand(opPos int, operand int) {
 	c.replaceInstruction(opPos, newInstruction)
 }
 
+func (c *Compiler) currentScope() *CompilationScope {
+	return &c.scopes[c.scopeIndex]
+}
+
 func (c *Compiler) currentInstructions() code.Instructions {
-	return c.scopes[c.scopeIndex].instructions
+	return c.currentScope().instructions
 }
 
 func (c *Compiler) enterScope() {
