@@ -191,11 +191,11 @@ func TestCallingFunctionsWithBindings(t *testing.T) {
 			expected: 3,
 		},
 		{
-			input:    `let oneAndTwo = fn() { let one = 1; let two = 2; one + two; }; let threeAndFour = fn() { let three = 3; let four = 4; three + four; }; oneAndTwo(); + threeAndFour();`,
+			input:    `let oneAndTwo = fn() { let one = 1; let two = 2; one + two; }; let threeAndFour = fn() { let three = 3; let four = 4; three + four; }; oneAndTwo() + threeAndFour();`,
 			expected: 10,
 		},
 		{
-			input:    `let firstFoobar = fn() { let foobar = 50; foobar; }; let secondFoobar = fn() { let foobar = 100; foobar; }; firstFoobar(); + secondFoobar();`,
+			input:    `let firstFoobar = fn() { let foobar = 50; foobar; }; let secondFoobar = fn() { let foobar = 100; foobar; }; firstFoobar() + secondFoobar();`,
 			expected: 150,
 		},
 		{
