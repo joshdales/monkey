@@ -180,6 +180,23 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpSetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
+			frame := vm.currentFrame()
+
+			vm.stack[frame.basepointer+int(localIndex)] = vm.pop()
+
+		case code.OpGetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
+			frame := vm.currentFrame()
+
+			err := vm.push(vm.stack[frame.basepointer+int(localIndex)])
+			if err != nil {
+				return err
+			}
+
 		case code.OpIndex:
 			index := vm.pop()
 			left := vm.pop()
@@ -195,11 +212,12 @@ func (vm *VM) Run() error {
 			}
 			frame := NewFrame(fn, vm.sp)
 			vm.pushFrame(frame)
+			vm.sp = frame.basepointer + fn.NumLocals
 
 		case code.OpReturnValue:
 			returnValue := vm.pop()
-			vm.popFrame()
-			vm.pop()
+			frame := vm.popFrame()
+			vm.sp = frame.basepointer - 1
 
 			err := vm.push(returnValue)
 			if err != nil {
@@ -207,8 +225,8 @@ func (vm *VM) Run() error {
 			}
 
 		case code.OpReturn:
-			vm.popFrame()
-			vm.pop()
+			frame := vm.popFrame()
+			vm.sp = frame.basepointer - 1
 
 			err := vm.push(Null)
 			if err != nil {
