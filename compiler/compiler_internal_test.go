@@ -11,6 +11,8 @@ func TestCompilerScopes(t *testing.T) {
 	compiler := New()
 	assert.Equalf(t, 0, compiler.scopeIndex, "scopeIndex wrong. got=%d, want=%d", compiler.scopeIndex, 0)
 
+	globalSymbolTable := compiler.symbolTable
+
 	compiler.emit(code.OpMul)
 
 	compiler.enterScope()
@@ -22,8 +24,13 @@ func TestCompilerScopes(t *testing.T) {
 	last := compiler.scopes[compiler.scopeIndex].lastInstruction
 	assert.Equal(t, code.OpSub, last.Opcode, "lastInstruction.OpCode wrong. got=%d, want=%d")
 
+	assert.Equal(t, compiler.symbolTable.Outer, globalSymbolTable, "compiler did not enclose symbolTable")
+
 	compiler.leaveScope()
 	assert.Equalf(t, 0, compiler.scopeIndex, "scopeIndex wrong. got=%d, want=%d", compiler.scopeIndex, 0)
+
+	assert.Equal(t, compiler.symbolTable, globalSymbolTable, "compiler did not restore global symbol table")
+	assert.Nil(t, compiler.symbolTable.Outer, "compiler modified glodal symbol table incorrectly")
 
 	compiler.emit(code.OpAdd)
 	assert.Len(t, compiler.scopes[compiler.scopeIndex].instructions, 2, "instructions length wrong")
