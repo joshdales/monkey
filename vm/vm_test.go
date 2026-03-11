@@ -248,7 +248,7 @@ func TestCallingFunctionsWithArgumentsAndBindings(t *testing.T) {
 func TestCallingFunctionsWithWrongArguments(t *testing.T) {
 	tests := []struct{ input, expected string }{
 		{
-			input:    `fn() { 1; }();`,
+			input:    `fn() { 1; }(1);`,
 			expected: "wrong number of arguments: want=0, got=1",
 		},
 		{
@@ -262,11 +262,13 @@ func TestCallingFunctionsWithWrongArguments(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		comp := testutil.Compile(t, tt.input)
-		vm := vm.New(comp.Bytecode())
-		err := vm.Run()
-		require.Error(t, err)
-		assert.ErrorContainsf(t, err, tt.expected, "wrong VM error: want=%q, got=%q,", tt.expected, err)
+		t.Run(tt.input, func(t *testing.T) {
+			comp := testutil.Compile(t, tt.input)
+			vm := vm.New(comp.Bytecode())
+			err := vm.Run()
+			assert.Error(t, err)
+			assert.ErrorContainsf(t, err, tt.expected, "wrong VM error: want=%q, got=%q,", tt.expected, err)
+		})
 	}
 }
 
