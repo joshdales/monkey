@@ -6,6 +6,7 @@ import (
 	"monkey/vm"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -242,6 +243,31 @@ func TestCallingFunctionsWithArgumentsAndBindings(t *testing.T) {
 	}
 
 	runVmTest(t, tests)
+}
+
+func TestCallingFunctionsWithWrongArguments(t *testing.T) {
+	tests := []struct{ input, expected string }{
+		{
+			input:    `fn() { 1; }();`,
+			expected: "wrong number of arguments: want=0, got=1",
+		},
+		{
+			input:    `fn(a) { a; }();`,
+			expected: "wrong number of arguments: want=1, got=0",
+		},
+		{
+			input:    `fn(a, b) { a + b; }(1);`,
+			expected: "wrong number of arguments: want=2, got=1",
+		},
+	}
+
+	for _, tt := range tests {
+		comp := testutil.Compile(t, tt.input)
+		vm := vm.New(comp.Bytecode())
+		err := vm.Run()
+		require.Error(t, err)
+		assert.ErrorContainsf(t, err, tt.expected, "wrong VM error: want=%q, got=%q,", tt.expected, err)
+	}
 }
 
 type vmTestCase struct {
