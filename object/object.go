@@ -16,6 +16,7 @@ const (
 	HASH_OBJ              ObjectType = "HASH"
 	QUOTE_OBJ             ObjectType = "QUOTE"
 	MACRO_OBJ             ObjectType = "MACRO"
+	CLOSURE_OBJ           ObjectType = "CLOSURE"
 )
 
 type Object interface {
