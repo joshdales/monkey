@@ -12,21 +12,23 @@ import (
 func AssertObject(t *testing.T, actual object.Object, expected any) {
 	t.Helper()
 
-	switch value := expected.(type) {
+	switch expected := expected.(type) {
 	case int:
-		AssertIntegerObject(t, actual, int64(value))
+		AssertIntegerObject(t, actual, int64(expected))
 	case []int:
-		AssertIntegerArray(t, actual, value)
+		AssertIntegerArray(t, actual, expected)
 	case map[object.HashKey]int64:
-		AssertIntegerHash(t, actual, value)
+		AssertIntegerHash(t, actual, expected)
 	case int64:
-		AssertIntegerObject(t, actual, value)
+		AssertIntegerObject(t, actual, expected)
 	case bool:
-		AssertBooleanObject(t, actual, value)
+		AssertBooleanObject(t, actual, expected)
 	case string:
-		AssertStringObject(t, actual, value)
+		AssertStringObject(t, actual, expected)
 	case nil, *object.Null:
 		AssertNullObject(t, actual)
+	case *object.Error:
+		AssertErrorMessage(t, actual, expected)
 	}
 }
 
@@ -81,4 +83,11 @@ func AssertIntegerHash(t *testing.T, actual object.Object, expected map[object.H
 		require.Truef(t, ok, "no pair for gived key in Pairs %v", expectedKey)
 		AssertIntegerObject(t, pair.Value, expectedValue)
 	}
+}
+
+func AssertErrorMessage(t *testing.T, actual object.Object, expected *object.Error) {
+	t.Helper()
+	errObj, ok := actual.(*object.Error)
+	require.Truef(t, ok, "object is not an Error: %T (%+v", actual, actual)
+	assert.Equal(t, expected.Message, errObj.Message)
 }
