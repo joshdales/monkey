@@ -1,5 +1,7 @@
 package object
 
+import "fmt"
+
 type BuiltinFunction func(args ...Object) Object
 
 type Builtin struct {
@@ -42,6 +44,16 @@ var Builtins = []struct {
 			default:
 				return newError("argument to `len` not supported, got=%s", args[0].Type())
 			}
+		}},
+	},
+	{
+		"puts",
+		&Builtin{Fn: func(args ...Object) Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+
+			return nil
 		}},
 	},
 }
