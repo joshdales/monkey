@@ -28,6 +28,7 @@ const (
 	OpSetGlobal
 	OpGetLocal
 	OpSetLocal
+	OpGetBuiltin
 	OpArray
 	OpHash
 	OpIndex
@@ -68,6 +69,7 @@ var definitions = map[Opcode]*Definition{
 	OpReturnValue:   {"OpReturnValue", []int{}},
 	OpGetLocal:      {"OpGetLocal", []int{1}},
 	OpSetLocal:      {"OpSetLocal", []int{1}},
+	OpGetBuiltin:    {"OpGetBuiltin", []int{1}},
 }
 
 func Lookup(op byte) (*Definition, error) {
