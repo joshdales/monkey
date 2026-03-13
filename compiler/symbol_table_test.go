@@ -123,3 +123,30 @@ func TestResoveNestedLocal(t *testing.T) {
 		}
 	}
 }
+
+func TestDefineResolveBuiltins(t *testing.T) {
+	global := compiler.NewSymbolTable()
+	firstLocal := compiler.NewEnclosedSymbolTable(global)
+	secondLocal := compiler.NewEnclosedSymbolTable(firstLocal)
+
+	expected := []compiler.Symbol{
+		{Name: "a", Scope: compiler.BuiltinScope, Index: 0},
+		{Name: "c", Scope: compiler.BuiltinScope, Index: 1},
+		{Name: "e", Scope: compiler.BuiltinScope, Index: 2},
+		{Name: "f", Scope: compiler.BuiltinScope, Index: 3},
+	}
+
+	for i, v := range expected {
+		global.DefineBuiltin(i, v.Name)
+	}
+
+	for _, table := range []*compiler.SymbolTable{global, firstLocal, secondLocal} {
+		for _, sym := range expected {
+			t.Run(sym.Name, func(t *testing.T) {
+				result, ok := table.Resolve(sym.Name)
+				require.Truef(t, ok, "name %s not resolvable", sym.Name)
+				assert.Equalf(t, sym, result, "expected %s to resolve to %+v, got %+v", sym.Name, sym, result)
+			})
+		}
+	}
+}
