@@ -44,8 +44,8 @@ type Definition struct {
 
 var definitions = map[Opcode]*Definition{
 	OpConstant:      {"OpConstant", []int{2}},
-	OpAdd:           {"OpAdd", []int{}},
 	OpPop:           {"OpPop", []int{}},
+	OpAdd:           {"OpAdd", []int{}},
 	OpSub:           {"OpSub", []int{}},
 	OpMul:           {"OpMul", []int{}},
 	OpDiv:           {"OpDiv", []int{}},
@@ -61,15 +61,15 @@ var definitions = map[Opcode]*Definition{
 	OpNull:          {"OpNull", []int{}},
 	OpGetGlobal:     {"OpGetGlobal", []int{2}},
 	OpSetGlobal:     {"OpSetGlobal", []int{2}},
+	OpGetLocal:      {"OpGetLocal", []int{1}},
+	OpSetLocal:      {"OpSetLocal", []int{1}},
+	OpGetBuiltin:    {"OpGetBuiltin", []int{1}},
 	OpArray:         {"OpArray", []int{2}},
 	OpHash:          {"OpHash", []int{2}},
 	OpIndex:         {"OpIndex", []int{}},
 	OpCall:          {"OpCall", []int{1}},
 	OpReturn:        {"OpReturn", []int{}},
 	OpReturnValue:   {"OpReturnValue", []int{}},
-	OpGetLocal:      {"OpGetLocal", []int{1}},
-	OpSetLocal:      {"OpSetLocal", []int{1}},
-	OpGetBuiltin:    {"OpGetBuiltin", []int{1}},
 }
 
 func Lookup(op byte) (*Definition, error) {
