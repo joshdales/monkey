@@ -244,6 +244,16 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpClosure:
+			constIndex := code.ReadUint16(ins[ip+1:])
+			_ = code.ReadUint8(ins[ip+3:])
+			vm.currentFrame().ip += 3
+
+			err := vm.pushClosure(int(constIndex))
+			if err != nil {
+				return nil
+			}
+
 		}
 	}
 
