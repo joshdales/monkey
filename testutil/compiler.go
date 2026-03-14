@@ -13,10 +13,10 @@ func AssertInstructions(t *testing.T, actual code.Instructions, expected []code.
 	t.Helper()
 	concatted := concatInstructions(expected)
 
-	assert.Len(t, actual, len(concatted), "wrong number of instructions")
+	assert.Lenf(t, actual, len(concatted), "wrong number of instructions, got=%q want=%q", actual, concatted)
 
 	for i, ins := range concatted {
-		assert.EqualValues(t, ins, actual[i], "wrong instruction")
+		assert.EqualValues(t, ins, actual[i], "wrong instruction at %d, got=%q want=%q", i, actual[i], ins)
 	}
 }
 
