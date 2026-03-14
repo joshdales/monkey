@@ -17,6 +17,7 @@ func TestMake(t *testing.T) {
 		{code.OpConstant, []int{65534}, []byte{byte(code.OpConstant), 255, 254}},
 		{code.OpAdd, []int{}, []byte{byte(code.OpAdd)}},
 		{code.OpGetLocal, []int{255}, []byte{byte(code.OpGetLocal), 255}},
+		{code.OpClosure, []int{65534, 255}, []byte{byte(code.OpClosure), 255, 254, 255}},
 	}
 
 	for _, tt := range tests {
@@ -32,12 +33,14 @@ func TestInstructionsString(t *testing.T) {
 		code.Make(code.OpGetLocal, 1),
 		code.Make(code.OpConstant, 2),
 		code.Make(code.OpConstant, 65535),
+		code.Make(code.OpClosure, 65535, 255),
 	}
 
 	expected := `0000 OpAdd
 0001 OpGetLocal 1
 0003 OpConstant 2
 0006 OpConstant 65535
+0009 OpClosure 65535 255
 `
 
 	concatted := code.Instructions{}
@@ -54,22 +57,26 @@ func TestInstructionsString(t *testing.T) {
 
 func TestReadOperands(t *testing.T) {
 	tests := []struct {
+		name      string
 		op        code.Opcode
 		operands  []int
 		bytesRead int
 	}{
-		{code.OpConstant, []int{65535}, 2},
-		{code.OpGetLocal, []int{255}, 1},
+		{"Contstant", code.OpConstant, []int{65535}, 2},
+		{"GetLocal", code.OpGetLocal, []int{255}, 1},
+		{"Closure", code.OpClosure, []int{65535, 255}, 3},
 	}
 
 	for _, tt := range tests {
-		instruction := code.Make(tt.op, tt.operands...)
-		def, err := code.Lookup(byte(tt.op))
-		require.NoErrorf(t, err, "definition not found: %q", err)
-		operandsRead, n := code.ReadOperands(def, instruction[1:])
-		assert.Equal(t, tt.bytesRead, n)
-		for i, want := range tt.operands {
-			assert.Equal(t, want, operandsRead[i])
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			instruction := code.Make(tt.op, tt.operands...)
+			def, err := code.Lookup(byte(tt.op))
+			require.NoErrorf(t, err, "definition not found: %q", err)
+			operandsRead, n := code.ReadOperands(def, instruction[1:])
+			assert.Equal(t, tt.bytesRead, n)
+			for i, want := range tt.operands {
+				assert.Equal(t, want, operandsRead[i])
+			}
+		})
 	}
 }
