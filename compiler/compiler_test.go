@@ -295,66 +295,6 @@ func TestGlobalLetStatements(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
-func TestLetStatementsScopes(t *testing.T) {
-	tests := []compilerTestCase{
-		{
-			input: `let num = 55;
-			fn() { num; };`,
-			expectedConstants: []any{55, []code.Instructions{
-				code.Make(code.OpGetGlobal, 0),
-				code.Make(code.OpReturnValue),
-			}},
-			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
-				code.Make(code.OpConstant, 1),
-				code.Make(code.OpPop),
-			},
-		},
-		{
-			input: `
-			fn() {
-				let num = 55;
-				num;
-			}`,
-			expectedConstants: []any{55, []code.Instructions{
-				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetLocal, 0),
-				code.Make(code.OpGetLocal, 0),
-				code.Make(code.OpReturnValue),
-			}},
-			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 1),
-				code.Make(code.OpPop),
-			},
-		},
-		{
-			input: `
-			fn() {
-				let a = 55;
-				let b = 77;
-				a + b;
-			}`,
-			expectedConstants: []any{55, 77, []code.Instructions{
-				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetLocal, 0),
-				code.Make(code.OpConstant, 1),
-				code.Make(code.OpSetLocal, 1),
-				code.Make(code.OpGetLocal, 0),
-				code.Make(code.OpGetLocal, 1),
-				code.Make(code.OpAdd),
-				code.Make(code.OpReturnValue),
-			}},
-			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 2),
-				code.Make(code.OpPop),
-			},
-		},
-	}
-
-	runCompilerTests(t, tests)
-}
-
 func TestArrayLiterals(t *testing.T) {
 	tests := []compilerTestCase{
 		{
@@ -490,7 +430,7 @@ func TestFunctions(t *testing.T) {
 				code.Make(code.OpReturnValue),
 			}},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 2),
+				code.Make(code.OpClosure, 2, 0),
 				code.Make(code.OpPop),
 			},
 		},
@@ -503,7 +443,7 @@ func TestFunctions(t *testing.T) {
 				code.Make(code.OpReturnValue),
 			}},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 2),
+				code.Make(code.OpClosure, 2, 0),
 				code.Make(code.OpPop),
 			},
 		},
@@ -516,17 +456,24 @@ func TestFunctions(t *testing.T) {
 				code.Make(code.OpReturnValue),
 			}},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 2),
+				code.Make(code.OpClosure, 2, 0),
 				code.Make(code.OpPop),
 			},
 		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
+func TestFunctionsWithoutReturnValue(t *testing.T) {
+	tests := []compilerTestCase{
 		{
 			input: `fn() { }`,
 			expectedConstants: []any{[]code.Instructions{
 				code.Make(code.OpReturn),
 			}},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
+				code.Make(code.OpClosure, 0, 0),
 				code.Make(code.OpPop),
 			},
 		},
@@ -538,13 +485,13 @@ func TestFunctions(t *testing.T) {
 func TestFunctionCalls(t *testing.T) {
 	tests := []compilerTestCase{
 		{
-			input: `fn() { 24; }();`,
+			input: `fn() { 24 }();`,
 			expectedConstants: []any{24, []code.Instructions{
-				code.Make(code.OpConstant, 0), // The literal 24
+				code.Make(code.OpConstant, 0),
 				code.Make(code.OpReturnValue),
 			}},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 1), // The compiled function
+				code.Make(code.OpClosure, 1, 0),
 				code.Make(code.OpCall, 0),
 				code.Make(code.OpPop),
 			},
@@ -559,7 +506,7 @@ func TestFunctionCalls(t *testing.T) {
 				code.Make(code.OpReturnValue),
 			}},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 1), // The compiled function
+				code.Make(code.OpClosure, 1, 0), // The compiled function
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpCall, 0),
@@ -573,7 +520,7 @@ func TestFunctionCalls(t *testing.T) {
 				24,
 			},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
+				code.Make(code.OpClosure, 0, 0),
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
@@ -582,13 +529,16 @@ func TestFunctionCalls(t *testing.T) {
 			},
 		},
 		{
-			input: `let oneArg = fn(a) { }; oneArg(24);`,
+			input: `let oneArg = fn(a) { a; }; oneArg(24);`,
 			expectedConstants: []any{
-				[]code.Instructions{code.Make(code.OpReturn)},
+				[]code.Instructions{
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
 				24,
 			},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
+				code.Make(code.OpClosure, 0, 0),
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
@@ -603,31 +553,13 @@ func TestFunctionCalls(t *testing.T) {
 				24, 25, 26,
 			},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
+				code.Make(code.OpClosure, 0, 0),
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpConstant, 2),
 				code.Make(code.OpConstant, 3),
 				code.Make(code.OpCall, 3),
-				code.Make(code.OpPop),
-			},
-		},
-		{
-			input: `let oneArg = fn(a) { a; }; oneArg(24);`,
-			expectedConstants: []any{
-				[]code.Instructions{
-					code.Make(code.OpGetLocal, 0),
-					code.Make(code.OpReturnValue),
-				},
-				24,
-			},
-			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
-				code.Make(code.OpGetGlobal, 0),
-				code.Make(code.OpConstant, 1),
-				code.Make(code.OpCall, 1),
 				code.Make(code.OpPop),
 			},
 		},
@@ -645,13 +577,63 @@ func TestFunctionCalls(t *testing.T) {
 				24, 25, 26,
 			},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
+				code.Make(code.OpClosure, 0, 0),
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpConstant, 2),
 				code.Make(code.OpConstant, 3),
 				code.Make(code.OpCall, 3),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
+func TestLetStatementScopes(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `let num = 55; fn() { num; }`,
+			expectedConstants: []any{55, []code.Instructions{
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpReturnValue),
+			}},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpClosure, 1, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `fn() { let num = 55; num; }`,
+			expectedConstants: []any{55, []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetLocal, 0),
+				code.Make(code.OpGetLocal, 0),
+				code.Make(code.OpReturnValue),
+			}},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpClosure, 1, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `fn() { let a = 55; let b = 77; a + b; }`,
+			expectedConstants: []any{55, 77, []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetLocal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetLocal, 1),
+				code.Make(code.OpGetLocal, 0),
+				code.Make(code.OpGetLocal, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpReturnValue),
+			}},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpClosure, 2, 0),
 				code.Make(code.OpPop),
 			},
 		},
@@ -688,7 +670,7 @@ func TestBuiltins(t *testing.T) {
 				},
 			},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),
+				code.Make(code.OpClosure, 0, 0),
 				code.Make(code.OpPop),
 			},
 		},
