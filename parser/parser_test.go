@@ -220,6 +220,17 @@ func TestFunctionParameterParsing(t *testing.T) {
 	}
 }
 
+func TestFunctionLiteralWithName(t *testing.T) {
+	input := `let myfunction = fn() { };`
+	program := testutil.SetupProgram(t, input, 1)
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+	require.Truef(t, ok, "program.Statements[0] is not a ast.LetStatement. got=%T", program.Statements[0])
+	function, ok := stmt.Value.(*ast.FunctionLiteral)
+	require.Truef(t, ok, "stmt.Value is not a ast.FunctionLiteral. got=%T", stmt.Value)
+	assert.Equal(t, "myFunction", function.Name, "function literal name wrong, want 'myfunction', got=%q", function.Name)
+
+}
+
 func TestCallExpressionParsing(t *testing.T) {
 	input := "add(1, 2 * 3, 4 + 5);"
 	program := testutil.SetupProgram(t, input, 1)
