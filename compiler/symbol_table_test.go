@@ -158,7 +158,7 @@ func TestResolveFree(t *testing.T) {
 	firstLocal := compiler.NewEnclosedSymbolTable(global)
 	firstLocal.Define("c")
 	firstLocal.Define("d")
-	secondLocal := compiler.NewEnclosedSymbolTable(global)
+	secondLocal := compiler.NewEnclosedSymbolTable(firstLocal)
 	secondLocal.Define("e")
 	secondLocal.Define("f")
 
@@ -184,12 +184,12 @@ func TestResolveFree(t *testing.T) {
 				compiler.Symbol{Name: "b", Scope: compiler.GlobalScope, Index: 1},
 				compiler.Symbol{Name: "c", Scope: compiler.FreeScope, Index: 0},
 				compiler.Symbol{Name: "d", Scope: compiler.FreeScope, Index: 1},
-				compiler.Symbol{Name: "e", Scope: compiler.LocalScope, Index: 1},
+				compiler.Symbol{Name: "e", Scope: compiler.LocalScope, Index: 0},
 				compiler.Symbol{Name: "f", Scope: compiler.LocalScope, Index: 1},
 			},
 			[]compiler.Symbol{
-				compiler.Symbol{Name: "c", Scope: compiler.FreeScope, Index: 0},
-				compiler.Symbol{Name: "d", Scope: compiler.FreeScope, Index: 1},
+				compiler.Symbol{Name: "c", Scope: compiler.LocalScope, Index: 0},
+				compiler.Symbol{Name: "d", Scope: compiler.LocalScope, Index: 1},
 			},
 		},
 	}
@@ -213,7 +213,7 @@ func TestResolveUnresolveableFree(t *testing.T) {
 	global.Define("a")
 	firstLocal := compiler.NewEnclosedSymbolTable(global)
 	firstLocal.Define("c")
-	secondLocal := compiler.NewEnclosedSymbolTable(global)
+	secondLocal := compiler.NewEnclosedSymbolTable(firstLocal)
 	secondLocal.Define("e")
 	secondLocal.Define("f")
 
@@ -236,5 +236,4 @@ func TestResolveUnresolveableFree(t *testing.T) {
 		_, ok := secondLocal.Resolve(name)
 		require.Falsef(t, ok, "name %s resolved, but was not expected to", name)
 	}
-
 }
