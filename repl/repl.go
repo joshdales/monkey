@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
-	"strconv"
 
 	"monkey/compiler"
 	"monkey/evaluator"
@@ -15,37 +13,9 @@ import (
 	"monkey/vm"
 )
 
-var compilerEnabled bool
-
-func checkCompilerEnabled() {
-	noCompiler, err := strconv.ParseBool(os.Getenv("DISABLE_COMPILER"))
-	if err != nil {
-		compilerEnabled = true
-	}
-
-	compilerEnabled = !noCompiler
-}
-
 const PROMPT = ">> "
 
-func Start(in io.Reader, out io.Writer) {
-	checkCompilerEnabled()
-	if compilerEnabled {
-		compilerStart(in, out)
-	} else {
-		interpreterStart(in, out)
-	}
-}
-
-func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, "Parser errors:\n")
-	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
-	}
-}
-
-func compilerStart(in io.Reader, out io.Writer) {
-	scanner := bufio.NewScanner(in)
+func StartVm(scanner *bufio.Scanner, out io.Writer) {
 	constants := []object.Object{}
 	globals := make([]object.Object, vm.GlobalsSize)
 	symbolTable := compiler.NewSymbolTable()
@@ -54,15 +24,11 @@ func compilerStart(in io.Reader, out io.Writer) {
 	}
 
 	for {
-		fmt.Fprint(out, PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
+		p := parseInput(out, scanner)
+		if p == nil {
 			return
 		}
 
-		line := scanner.Text()
-		l := lexer.New(line)
-		p := parser.New(l)
 		program := p.ParseProgram()
 		if len(p.Errors()) > 0 {
 			printParserErrors(out, p.Errors())
@@ -90,21 +56,16 @@ func compilerStart(in io.Reader, out io.Writer) {
 	}
 }
 
-func interpreterStart(in io.Reader, out io.Writer) {
-	scanner := bufio.NewScanner(in)
+func StartEval(scanner *bufio.Scanner, out io.Writer) {
 	env := object.NewEnvironment()
 	macroEnv := object.NewEnvironment()
 
 	for {
-		fmt.Fprint(out, PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
+		p := parseInput(out, scanner)
+		if p == nil {
 			return
 		}
 
-		line := scanner.Text()
-		l := lexer.New(line)
-		p := parser.New(l)
 		program := p.ParseProgram()
 		if len(p.Errors()) > 0 {
 			printParserErrors(out, p.Errors())
@@ -119,4 +80,23 @@ func interpreterStart(in io.Reader, out io.Writer) {
 			io.WriteString(out, "\n")
 		}
 	}
+}
+
+func printParserErrors(out io.Writer, errors []string) {
+	io.WriteString(out, "Parser errors:\n")
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
+	}
+}
+
+func parseInput(out io.Writer, scanner *bufio.Scanner) *parser.Parser {
+	fmt.Fprint(out, PROMPT)
+	scanned := scanner.Scan()
+	if !scanned {
+		return nil
+	}
+
+	line := scanner.Text()
+	l := lexer.New(line)
+	return parser.New(l)
 }
