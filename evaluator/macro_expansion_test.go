@@ -17,7 +17,7 @@ func TestDefineMacros(t *testing.T) {
 	let mymacro = macro(x, y) {x + y};
 	`
 	env := object.NewEnvironment()
-	program := testutil.SetupProgram(t, input, 2)
+	program := testutil.SetupProgram(t, input, 3)
 
 	evaluator.DefineMacros(env, program)
 
