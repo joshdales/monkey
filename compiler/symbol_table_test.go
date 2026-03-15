@@ -208,6 +208,16 @@ func TestResolveFree(t *testing.T) {
 	}
 }
 
+func TestDefineAndResolveFunctionName(t *testing.T) {
+	global := compiler.NewSymbolTable()
+	global.DefineFunctionName("a")
+
+	expected := compiler.Symbol{Name: "a", Scope: compiler.FunctionScope, Index: 0}
+	result, ok := global.Resolve(expected.Name)
+	require.True(t, ok)
+	assert.EqualValues(t, expected, result)
+}
+
 func TestResolveUnresolveableFree(t *testing.T) {
 	global := compiler.NewSymbolTable()
 	global.Define("a")
@@ -236,4 +246,15 @@ func TestResolveUnresolveableFree(t *testing.T) {
 		_, ok := secondLocal.Resolve(name)
 		require.Falsef(t, ok, "name %s resolved, but was not expected to", name)
 	}
+}
+
+func TestShadowingFunctionName(t *testing.T) {
+	global := compiler.NewSymbolTable()
+	global.DefineFunctionName("a")
+	global.Define("a")
+
+	expected := compiler.Symbol{Name: "a", Scope: compiler.GlobalScope, Index: 0}
+	result, ok := global.Resolve(expected.Name)
+	require.True(t, ok)
+	assert.EqualValues(t, expected, result)
 }
