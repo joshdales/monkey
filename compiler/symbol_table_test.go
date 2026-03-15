@@ -150,3 +150,91 @@ func TestDefineResolveBuiltins(t *testing.T) {
 		}
 	}
 }
+
+func TestResolveFree(t *testing.T) {
+	global := compiler.NewSymbolTable()
+	global.Define("a")
+	global.Define("b")
+	firstLocal := compiler.NewEnclosedSymbolTable(global)
+	firstLocal.Define("c")
+	firstLocal.Define("d")
+	secondLocal := compiler.NewEnclosedSymbolTable(global)
+	secondLocal.Define("e")
+	secondLocal.Define("f")
+
+	tests := []struct {
+		table               *compiler.SymbolTable
+		expectedSymbols     []compiler.Symbol
+		expectedFreeSymbols []compiler.Symbol
+	}{
+		{
+			firstLocal,
+			[]compiler.Symbol{
+				compiler.Symbol{Name: "a", Scope: compiler.GlobalScope, Index: 0},
+				compiler.Symbol{Name: "b", Scope: compiler.GlobalScope, Index: 1},
+				compiler.Symbol{Name: "c", Scope: compiler.LocalScope, Index: 0},
+				compiler.Symbol{Name: "d", Scope: compiler.LocalScope, Index: 1},
+			},
+			[]compiler.Symbol{},
+		},
+		{
+			secondLocal,
+			[]compiler.Symbol{
+				compiler.Symbol{Name: "a", Scope: compiler.GlobalScope, Index: 0},
+				compiler.Symbol{Name: "b", Scope: compiler.GlobalScope, Index: 1},
+				compiler.Symbol{Name: "c", Scope: compiler.FreeScope, Index: 0},
+				compiler.Symbol{Name: "d", Scope: compiler.FreeScope, Index: 1},
+				compiler.Symbol{Name: "e", Scope: compiler.LocalScope, Index: 1},
+				compiler.Symbol{Name: "f", Scope: compiler.LocalScope, Index: 1},
+			},
+			[]compiler.Symbol{
+				compiler.Symbol{Name: "c", Scope: compiler.FreeScope, Index: 0},
+				compiler.Symbol{Name: "d", Scope: compiler.FreeScope, Index: 1},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		for _, sym := range tt.expectedSymbols {
+			result, ok := tt.table.Resolve(sym.Name)
+			require.Truef(t, ok, "name %s not resolveable", sym.Name)
+			assert.EqualValuesf(t, sym, result, "expected %s to resolve to %+v, got %+v", sym.Name, sym, result)
+		}
+		assert.Len(t, tt.table.FreeSymbols, len(tt.expectedFreeSymbols), "wrong number of free symbols")
+		for i, sym := range tt.expectedFreeSymbols {
+			result := tt.table.FreeSymbols[i]
+			assert.EqualValues(t, sym, result, "wrong free symbol. got=%+v, want=%+v", result, sym)
+		}
+	}
+}
+
+func TestResolveUnresolveableFree(t *testing.T) {
+	global := compiler.NewSymbolTable()
+	global.Define("a")
+	firstLocal := compiler.NewEnclosedSymbolTable(global)
+	firstLocal.Define("c")
+	secondLocal := compiler.NewEnclosedSymbolTable(global)
+	secondLocal.Define("e")
+	secondLocal.Define("f")
+
+	expected := []compiler.Symbol{
+		compiler.Symbol{Name: "a", Scope: compiler.GlobalScope, Index: 0},
+		compiler.Symbol{Name: "c", Scope: compiler.FreeScope, Index: 0},
+		compiler.Symbol{Name: "e", Scope: compiler.LocalScope, Index: 0},
+		compiler.Symbol{Name: "f", Scope: compiler.LocalScope, Index: 1},
+	}
+
+	for _, sym := range expected {
+		result, ok := secondLocal.Resolve(sym.Name)
+		require.Truef(t, ok, "name %s not resolveable", sym.Name)
+		assert.EqualValuesf(t, sym, result, "expected %s to resolve to %+v, got %+v", sym.Name, sym, result)
+	}
+
+	expectedUnresolveable := []string{"b", "d"}
+
+	for _, name := range expectedUnresolveable {
+		_, ok := secondLocal.Resolve(name)
+		require.Falsef(t, ok, "name %s resolved, but was not expected to", name)
+	}
+
+}
