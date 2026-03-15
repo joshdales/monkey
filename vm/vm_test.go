@@ -431,6 +431,16 @@ func runVmTest(t *testing.T, tests []vmTestCase) {
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
 			comp := testutil.Compile(t, tt.input)
+			// for i, constant := range comp.Bytecode().Constants {
+			// 	fmt.Printf("CONSTANT %d %p (%T):\n", i, constant, constant)
+			// 	switch constant := constant.(type) {
+			// 	case *object.CompiledFunction:
+			// 		fmt.Printf("Instructions:\n%s", constant.Instructions)
+			// 	case *object.Integer:
+			// 		fmt.Printf("Value:%d\n", constant.Value)
+			// 	}
+			// 	fmt.Printf("\n")
+			// }
 			vm := vm.New(comp.Bytecode())
 			err := vm.Run()
 			require.NoError(t, err)
