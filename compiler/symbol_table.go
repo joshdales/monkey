@@ -73,6 +73,12 @@ func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
 	return symbol
 }
 
+func (s *SymbolTable) DefineFunctionName(name string) Symbol {
+	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
+	s.store[name] = symbol
+	return symbol
+}
+
 func (s *SymbolTable) defineFree(original Symbol) Symbol {
 	s.FreeSymbols = append(s.FreeSymbols, original)
 	symbol := Symbol{Name: original.Name, Index: len(s.FreeSymbols) - 1}
