@@ -521,7 +521,7 @@ func (vm *VM) executeCall(numArgs int) error {
 	case *object.Builtin:
 		return vm.callBuiltin(callee, numArgs)
 	default:
-		return fmt.Errorf("calling non-function and non-built-in")
+		return fmt.Errorf("calling non-closure and non-built-in")
 	}
 }
 
