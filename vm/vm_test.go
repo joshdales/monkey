@@ -298,6 +298,22 @@ func TestBuiltinFunctions(t *testing.T) {
 	runVmTest(t, tests)
 }
 
+func TestClosures(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+let newClosure = fn(a) {
+	fn() { a; };
+};
+let closure = newClosure(99);
+closure();`,
+			expected: 99,
+		},
+	}
+
+	runVmTest(t, tests)
+}
+
 type vmTestCase struct {
 	input    string
 	expected any
